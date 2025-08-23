@@ -108,7 +108,7 @@ func (r *repository) Update(ctx context.Context, ot *entities.ObjectType) (*enti
 		ud.Name = ot.Name
 
 		var count int64
-		if err := r.db.WithContext(ctx).Model(&entities.ObjectType{}).Where("name = ? && id != ?", ot.Name, ot.ID).Count(&count).Error; err != nil {
+		if err := r.db.WithContext(ctx).Model(&entities.ObjectType{}).Where("name = ? AND id != ?", ot.Name, ot.ID).Count(&count).Error; err != nil {
 			return nil, err
 		}
 
@@ -129,7 +129,7 @@ func (r *repository) Delete(ctx context.Context, id uint) error {
 	if tx.Error != nil {
 		return tx.Error
 	}
-	if tx.RowsAffected <= 1 {
+	if tx.RowsAffected < 1 {
 		return gorm.ErrRecordNotFound
 	}
 	return nil

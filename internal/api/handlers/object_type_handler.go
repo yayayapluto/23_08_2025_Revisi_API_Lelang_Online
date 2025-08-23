@@ -1,11 +1,13 @@
 package handlers
 
 import (
+	"errors"
 	"github.com/gofiber/fiber/v2"
 	"github.com/yayayapluto/revisi_api_lelang_online/entities"
 	presenters "github.com/yayayapluto/revisi_api_lelang_online/internal/api/presenters"
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils/pagination"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/objectType"
+	"gorm.io/gorm"
 	"math"
 )
 
@@ -65,6 +67,9 @@ func (o *objectTypeHandler) Create(ctx *fiber.Ctx) error {
 	}
 
 	if err := o.s.Create(ctx.UserContext(), &ot); err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "failed to create new object type", err)
+		}
 		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to create new object type", err)
 	}
 
@@ -101,8 +106,12 @@ func (o *objectTypeHandler) Update(ctx *fiber.Ctx) error {
 
 	otRes, err := o.s.Update(ctx.UserContext(), &ot)
 	if err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "failed to update object type", err)
+		}
 		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to update object type", err)
 	}
+	otRes.ID = uint(id)
 
 	return presenters.SuccessResponse[entities.ObjectType](ctx, fiber.StatusOK, "successfully update object type", otRes)
 }
@@ -114,6 +123,9 @@ func (o *objectTypeHandler) Delete(ctx *fiber.Ctx) error {
 	}
 
 	if err := o.s.Delete(ctx.UserContext(), uint(id)); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return presenters.ErrorResponse(ctx, fiber.StatusNotFound, "failed to delete object type", err)
+		}
 		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to delete object type", err)
 	}
 

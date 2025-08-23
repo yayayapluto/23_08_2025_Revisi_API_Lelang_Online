@@ -24,13 +24,13 @@ func SeedObjectType(db *gorm.DB, total int) {
 		}
 		for i := 0; i < total; i++ {
 			data := &entities.ObjectType{
-				Name: gofakeit.LoremIpsumWord(),
+				Name: gofakeit.HipsterWord(),
 			}
 			if err := db.Create(data).Error; err != nil {
 				log.Printf("skipped entry %s: %s", data.Name, err)
 				continue
 			}
 		}
-		log.Println("seeding object type done")
 	}
+	log.Println("seeding object type done")
 }
