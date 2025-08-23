@@ -37,7 +37,7 @@ func (r *repository) List(ctx context.Context, offset, limit int, search, sortDi
 		defSortBy = *sortBy
 	}
 
-	validSortDir := []string{"asc", "descending", "created_at"}
+	validSortDir := []string{"asc", "desc"}
 	defSortDir := validSortDir[0]
 	if sortDir != nil {
 		if !slices.Contains(validSortDir, *sortDir) {
