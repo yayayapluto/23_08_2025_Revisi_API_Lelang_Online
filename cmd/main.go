@@ -1,12 +1,25 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"github.com/yayayapluto/revisi_api_lelang_online/cmd/config"
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
+	ctx, cancel := context.WithCancel(context.Background())
+	sigCh := make(chan os.Signal, 1)
+	signal.Notify(sigCh, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sigCh
+		fmt.Println("shutting down...")
+		cancel()
+	}()
+
 	env, err := utils.LoadEnv()
 	fmt.Println(env)
 
@@ -28,5 +41,5 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Println("Success connected to database!")
+	<-ctx.Done()
 }
