@@ -103,9 +103,9 @@ func (r *repository) GetByName(ctx context.Context, name string) (*entities.Obje
 }
 
 func (r *repository) Update(ctx context.Context, ot *entities.ObjectType) (*entities.ObjectType, error) {
-	var ud entities.ObjectType // ud := update data
+	ud := map[string]interface{}{} // ud := update data
 	if ot.Name != "" {
-		ud.Name = ot.Name
+		ud["Name"] = ot.Name
 
 		var count int64
 		if err := r.db.WithContext(ctx).Model(&entities.ObjectType{}).Where("name = ? AND id != ?", ot.Name, ot.ID).Count(&count).Error; err != nil {
@@ -121,7 +121,12 @@ func (r *repository) Update(ctx context.Context, ot *entities.ObjectType) (*enti
 		return nil, err
 	}
 
-	return &ud, nil
+	var result entities.ObjectType
+	if err := r.db.WithContext(ctx).First(&ot, ot.ID).Error; err != nil {
+		return nil, err
+	}
+
+	return &result, nil
 }
 
 func (r *repository) Delete(ctx context.Context, id uint) error {
