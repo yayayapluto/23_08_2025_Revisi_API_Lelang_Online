@@ -122,7 +122,7 @@ func (r *repository) Update(ctx context.Context, ot *entities.ObjectType) (*enti
 	}
 
 	var result entities.ObjectType
-	if err := r.db.WithContext(ctx).First(&ot, ot.ID).Error; err != nil {
+	if err := r.db.WithContext(ctx).First(&result, ot.ID).Error; err != nil {
 		return nil, err
 	}
 
