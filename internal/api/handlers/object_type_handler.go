@@ -3,6 +3,7 @@ package handlers
 import (
 	"errors"
 	"github.com/gofiber/fiber/v2"
+	"github.com/yayayapluto/revisi_api_lelang_online/domain"
 	"github.com/yayayapluto/revisi_api_lelang_online/entities"
 	presenters "github.com/yayayapluto/revisi_api_lelang_online/internal/api/presenters"
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils/pagination"
@@ -91,20 +92,23 @@ func (o *objectTypeHandler) Get(ctx *fiber.Ctx) error {
 }
 
 func (o *objectTypeHandler) Update(ctx *fiber.Ctx) error {
-	var ot entities.ObjectType
 
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "invalid id param", err)
 	}
 
-	ot.ID = uint(id)
-
-	if err := ctx.BodyParser(&ot); err != nil {
+	var od domain.UpdateRequestObjectType
+	if err := ctx.BodyParser(&od); err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "failed to parse body request", err)
 	}
 
-	otRes, err := o.s.Update(ctx.UserContext(), &ot)
+	ot := &entities.ObjectType{ID: uint(id)}
+	if od.Name != nil {
+		ot.Name = *od.Name
+	}
+
+	otRes, err := o.s.Update(ctx.UserContext(), ot)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "failed to update object type", err)
