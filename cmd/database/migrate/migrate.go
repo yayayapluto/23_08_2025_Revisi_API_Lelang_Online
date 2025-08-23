@@ -9,6 +9,7 @@ import (
 
 func Migrate(db *gorm.DB) error {
 	do_migrate(db, "object_types", &entities.ObjectType{})
+	do_migrate(db, "organizers", &entities.Organizer{})
 
 	fmt.Println("migration done")
 	return nil
