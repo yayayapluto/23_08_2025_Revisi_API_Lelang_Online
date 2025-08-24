@@ -10,12 +10,14 @@ type RouteConfig struct {
 	ObjectTypeHandler handlers.ObjectTypeHandler
 	OrganizerHandler  handlers.OrganizerHandler
 	ItemHandler       handlers.ItemHandler
+	ItemDetailHandler handlers.ItemDetailHandler
 }
 
 func (r *RouteConfig) Setup() {
 	r.ObjectType()
 	r.Organizer()
 	r.Item()
+	r.ItemDetail()
 }
 
 func (r *RouteConfig) ObjectType() {
@@ -43,4 +45,13 @@ func (r *RouteConfig) Item() {
 	group.Get("/:id", r.ItemHandler.Get)
 	group.Put("/:id", r.ItemHandler.Update)
 	group.Delete("/:id", r.ItemHandler.Delete)
+}
+
+func (r *RouteConfig) ItemDetail() {
+	group := r.App.Group("/api/itemDetails")
+	group.Get("/", r.ItemDetailHandler.List)
+	group.Post("/", r.ItemDetailHandler.Create)
+	group.Get("/:itemID", r.ItemDetailHandler.Get)
+	group.Put("/:itemID", r.ItemDetailHandler.Update)
+	group.Delete("/:itemID", r.ItemDetailHandler.Delete)
 }

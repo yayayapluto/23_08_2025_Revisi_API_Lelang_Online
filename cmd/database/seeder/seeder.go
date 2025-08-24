@@ -13,6 +13,9 @@ func Seed(db *gorm.DB) error {
 	if err := disableFK(db, "items"); err != nil {
 		return err
 	}
+	if err := disableFK(db, "item_details"); err != nil {
+		return err
+	}
 	if err := disableFK(db, "object_types"); err != nil {
 		return err
 	}
@@ -24,15 +27,19 @@ func Seed(db *gorm.DB) error {
 	}
 
 	// Data master
-	SeedObjectType(db, 25)
-	SeedOrganizer(db, 50)
+	SeedObjectType(db, 10)
+	SeedOrganizer(db, 20)
 
 	// Auction-related
-	SeedFile(db, 100)
-	SeedItem(db, 100)
+	SeedFile(db, 30)
+	SeedItem(db, 30)
+	SeedItemDetail(db, 30)
 
 	// Enable foreign key check lagi
 	if err := enableFK(db, "items"); err != nil {
+		return err
+	}
+	if err := enableFK(db, "item_details"); err != nil {
 		return err
 	}
 	if err := enableFK(db, "object_types"); err != nil {
@@ -116,12 +123,12 @@ func SeedItem(db *gorm.DB, total int) {
 	for i := 0; i < total; i++ {
 		desc := gofakeit.SentenceSimple()
 		data := &entities.Item{
-			ObjectTypeID: uint(gofakeit.Number(1, 25)),
+			ObjectTypeID: uint(gofakeit.Number(1, 10)),
 			Name:         gofakeit.HipsterWord(),
 			Price:        float64(gofakeit.Number(1000000, 100000000)),
 			DepositPrice: float64(gofakeit.Number(100000, 10000000)),
 			Description:  &desc,
-			FileID:       uint(gofakeit.Number(1, 10)),
+			FileID:       uint(gofakeit.Number(1, 30)),
 		}
 		if err := db.Create(data).Error; err != nil {
 			log.Printf("skipped entry %s: %s", data.Name, err)
@@ -129,4 +136,50 @@ func SeedItem(db *gorm.DB, total int) {
 		}
 	}
 	log.Println("seeding item done")
+}
+
+func SeedItemDetail(db *gorm.DB, total int) {
+	if err := db.Exec("TRUNCATE TABLE item_details RESTART IDENTITY CASCADE").Error; err != nil {
+		panic(err)
+	}
+
+	for i := 0; i < total; i++ {
+		plate := gofakeit.LetterN(2) + gofakeit.Numerify("####") + gofakeit.LetterN(2)
+		series := gofakeit.Word()
+		cc := gofakeit.Float64Range(1000, 5000)
+		itype := gofakeit.CarType()
+		transmission := gofakeit.RandomString([]string{"Manual", "Automatic"})
+		model := gofakeit.Word()
+		frameNum := gofakeit.UUID()
+		machineNum := gofakeit.UUID()
+		km := gofakeit.Number(1000, 200000)
+		fuel := gofakeit.RandomString([]string{"Petrol", "Diesel", "Electric", "Hybrid"})
+		driveType := gofakeit.RandomString([]string{"FWD", "RWD", "AWD"})
+		stnkDate := gofakeit.Date()
+
+		data := &entities.ItemDetail{
+			ItemID:        uint(gofakeit.Number(1, 30)),
+			PlateNumber:   &plate,
+			Brand:         gofakeit.CarMaker(),
+			Series:        &series,
+			CC:            &cc,
+			Type:          &itype,
+			Transmission:  &transmission,
+			Model:         &model,
+			Year:          gofakeit.Year(),
+			FrameNumber:   &frameNum,
+			MachineNumber: &machineNum,
+			Kilometer:     &km,
+			Fuel:          &fuel,
+			Color:         gofakeit.Color(),
+			DriveType:     &driveType,
+			StnkDate:      &stnkDate,
+		}
+
+		if err := db.Create(data).Error; err != nil {
+			log.Printf("skipped entry %d: %s", data.ItemID, err)
+			continue
+		}
+	}
+	log.Println("seeding item_detail done")
 }

@@ -12,6 +12,7 @@ func Migrate(db *gorm.DB) error {
 	doMigrate(db, "organizers", &entities.Organizer{})
 	doMigrate(db, "files", &entities.File{})
 	doMigrate(db, "items", &entities.Item{})
+	doMigrate(db, "item_details", &entities.ItemDetail{})
 
 	fmt.Println("migration done")
 	return nil

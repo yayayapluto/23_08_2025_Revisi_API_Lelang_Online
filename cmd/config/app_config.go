@@ -8,6 +8,7 @@ import (
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/file"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/item"
+	"github.com/yayayapluto/revisi_api_lelang_online/pkg/itemDetail"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/objectType"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/organizer"
 	"gorm.io/gorm"
@@ -32,23 +33,27 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	organizerRepository := organizer.NewRepository(db)
 	fileRepository := file.NewRepository(db)
 	itemRepository := item.NewRepository(db)
+	itemDetailRepository := itemDetail.NewRepository(db)
 
 	// Services
 	objectTypeService := objectType.NewService(objectTypeRepository)
 	organizerService := organizer.NewService(organizerRepository)
 	fileService := file.NewService(fileRepository)
 	itemService := item.NewService(itemRepository, fileService)
+	itemDetailService := itemDetail.NewService(itemDetailRepository)
 
 	// Handlers
 	objectTypeHandler := handlers.NewObjectTypeHandler(objectTypeService)
 	organizerHandler := handlers.NewOrganizerHandler(organizerService)
 	itemHandler := handlers.NewItemHandler(itemService)
+	itemDetailHandler := handlers.NewItemDetailHandler(itemDetailService)
 
 	routeConfig := routes.RouteConfig{
 		App:               app,
 		ObjectTypeHandler: objectTypeHandler,
 		OrganizerHandler:  organizerHandler,
 		ItemHandler:       itemHandler,
+		ItemDetailHandler: itemDetailHandler,
 	}
 	routeConfig.Setup()
 
