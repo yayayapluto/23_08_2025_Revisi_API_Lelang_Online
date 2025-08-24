@@ -24,6 +24,8 @@ func main() {
 		panic(err)
 	}
 
+	app.Static("/public", "./public") // "path": "http://127.0.0.1:8080/public/uploads/2025-08-24/1756039884_splash_ALO.png" => Cannot GET /public/uploads/2025-08-24/1756039884_splash_ALO.png
+
 	if err := app.Listen(":8080"); err != nil {
 		panic(err)
 	}

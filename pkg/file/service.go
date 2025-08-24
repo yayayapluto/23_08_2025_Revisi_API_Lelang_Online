@@ -21,7 +21,12 @@ type (
 )
 
 func (s *service) Save(ctx context.Context, fileName *string, src io.Reader) (*entities.File, error) {
-	filePath := fmt.Sprintf("./uploads/%s/%d_%s", time.Now().Format(time.DateOnly), time.Now().Unix(), *fileName)
+	dir := fmt.Sprintf("./public/uploads/%s", time.Now().Format(time.DateOnly))
+	if err := os.MkdirAll(dir, 0755); err != nil {
+		return nil, err
+	}
+
+	filePath := fmt.Sprintf("%s/%d_%s", dir, time.Now().Unix(), *fileName)
 	dst, err := os.Create(filePath)
 	if err != nil {
 		return nil, err
@@ -33,8 +38,7 @@ func (s *service) Save(ctx context.Context, fileName *string, src io.Reader) (*e
 		}
 	}(dst)
 
-	_, err = io.Copy(dst, src)
-	if err != nil {
+	if _, err := io.Copy(dst, src); err != nil {
 		return nil, err
 	}
 

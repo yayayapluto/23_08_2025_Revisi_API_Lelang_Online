@@ -9,11 +9,13 @@ type RouteConfig struct {
 	App               *fiber.App
 	ObjectTypeHandler handlers.ObjectTypeHandler
 	OrganizerHandler  handlers.OrganizerHandler
+	ItemHandler       handlers.ItemHandler
 }
 
 func (r *RouteConfig) Setup() {
 	r.ObjectType()
 	r.Organizer()
+	r.Item()
 }
 
 func (r *RouteConfig) ObjectType() {
@@ -32,4 +34,13 @@ func (r *RouteConfig) Organizer() {
 	group.Get("/:id", r.OrganizerHandler.Get)
 	group.Put("/:id", r.OrganizerHandler.Update)
 	group.Delete("/:id", r.OrganizerHandler.Delete)
+}
+
+func (r *RouteConfig) Item() {
+	group := r.App.Group("/api/items")
+	group.Get("/", r.ItemHandler.List)
+	group.Post("/", r.ItemHandler.Create)
+	group.Get("/:id", r.ItemHandler.Get)
+	group.Put("/:id", r.ItemHandler.Update)
+	group.Delete("/:id", r.ItemHandler.Delete)
 }
