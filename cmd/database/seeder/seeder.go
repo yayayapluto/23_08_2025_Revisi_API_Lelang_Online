@@ -29,11 +29,7 @@ func Seed(db *gorm.DB) error {
 
 	// Auction-related
 	SeedFile(db, 100)
-<<<<<<< HEAD
 	SeedItem(db, 100)
-=======
-	//SeedItem(db, 100)
->>>>>>> 73871f59c39fc03f8deb7c1a0fc54d6656223361
 
 	// Enable foreign key check lagi
 	if err := enableFK(db, "items"); err != nil {
