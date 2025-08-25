@@ -6,14 +6,20 @@ import (
 )
 
 type RouteConfig struct {
-	App               *fiber.App
-	ObjectTypeHandler handlers.ObjectTypeHandler
-	OrganizerHandler  handlers.OrganizerHandler
+	App                 *fiber.App
+	ObjectTypeHandler   handlers.ObjectTypeHandler
+	OrganizerHandler    handlers.OrganizerHandler
+	ItemHandler         handlers.ItemHandler
+	ItemDetailHandler   handlers.ItemDetailHandler
+	ItemDocumentHandler handlers.ItemDocumentHandler
 }
 
 func (r *RouteConfig) Setup() {
 	r.ObjectType()
 	r.Organizer()
+	r.Item()
+	r.ItemDetail()
+	r.ItemDocument()
 }
 
 func (r *RouteConfig) ObjectType() {
@@ -32,4 +38,31 @@ func (r *RouteConfig) Organizer() {
 	group.Get("/:id", r.OrganizerHandler.Get)
 	group.Put("/:id", r.OrganizerHandler.Update)
 	group.Delete("/:id", r.OrganizerHandler.Delete)
+}
+
+func (r *RouteConfig) Item() {
+	group := r.App.Group("/api/items")
+	group.Get("/", r.ItemHandler.List)
+	group.Post("/", r.ItemHandler.Create)
+	group.Get("/:id", r.ItemHandler.Get)
+	group.Put("/:id", r.ItemHandler.Update)
+	group.Delete("/:id", r.ItemHandler.Delete)
+}
+
+func (r *RouteConfig) ItemDetail() {
+	group := r.App.Group("/api/itemDetails")
+	group.Get("/", r.ItemDetailHandler.List)
+	group.Post("/", r.ItemDetailHandler.Create)
+	group.Get("/:itemID", r.ItemDetailHandler.Get)
+	group.Put("/:itemID", r.ItemDetailHandler.Update)
+	group.Delete("/:itemID", r.ItemDetailHandler.Delete)
+}
+
+func (r *RouteConfig) ItemDocument() {
+	group := r.App.Group("/api/itemDocuments")
+	group.Get("/", r.ItemDocumentHandler.List)
+	group.Post("/", r.ItemDocumentHandler.Create)
+	group.Get("/:itemID", r.ItemDocumentHandler.Get)
+	group.Put("/:itemID", r.ItemDocumentHandler.Update)
+	group.Delete("/:itemID", r.ItemDocumentHandler.Delete)
 }

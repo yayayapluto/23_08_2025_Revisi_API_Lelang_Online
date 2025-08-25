@@ -47,7 +47,7 @@ func (r *repository) List(ctx context.Context, offset, limit int, search, sortDi
 	}
 
 	orderStr := fmt.Sprintf("%s %s", defSortBy, defSortDir)
-	query := r.db.WithContext(ctx).Model(&entities.ObjectType{})
+	query := r.db.WithContext(ctx).Model(&entities.ObjectType{}).Preload("Items.File").Preload("Items.ObjectType")
 
 	if search != nil {
 		sq := "%" + *search + "%"
@@ -82,13 +82,14 @@ func (r *repository) Create(ctx context.Context, ot *entities.ObjectType) error 
 
 func (r *repository) Get(ctx context.Context, id uint) (*entities.ObjectType, error) {
 	var ot entities.ObjectType
-	if err := r.db.WithContext(ctx).First(&ot, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.ObjectType{}).Preload("Items.File").Preload("Items.ObjectType").First(&ot, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, gorm.ErrRecordNotFound
 		}
 		return nil, err
 	}
 	return &ot, nil
+
 }
 
 func (r *repository) GetByName(ctx context.Context, name string) (*entities.ObjectType, error) {

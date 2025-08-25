@@ -8,14 +8,18 @@ import (
 )
 
 func Migrate(db *gorm.DB) error {
-	do_migrate(db, "object_types", &entities.ObjectType{})
-	do_migrate(db, "organizers", &entities.Organizer{})
+	doMigrate(db, "object_types", &entities.ObjectType{})
+	doMigrate(db, "organizers", &entities.Organizer{})
+	doMigrate(db, "files", &entities.File{})
+	doMigrate(db, "items", &entities.Item{})
+	doMigrate(db, "item_details", &entities.ItemDetail{})
+	doMigrate(db, "item_documents", &entities.ItemDocument{})
 
 	fmt.Println("migration done")
 	return nil
 }
 
-func do_migrate(db *gorm.DB, tbname string, entity interface{}) {
+func doMigrate(db *gorm.DB, tbname string, entity interface{}) {
 	if err := db.Exec(fmt.Sprintf("TRUNCATE TABLE %s RESTART IDENTITY", tbname)).Error; err != nil {
 		log.Printf("failed to truncate table %s: %s\n", tbname, err)
 	}
