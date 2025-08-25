@@ -15,6 +15,7 @@ func Migrate(db *gorm.DB) error {
 	doMigrate(db, "item_details", &entities.ItemDetail{})
 	doMigrate(db, "item_documents", &entities.ItemDocument{})
 	doMigrate(db, "item_grades", &entities.ItemGrade{})
+	doMigrate(db, "item_thumbnails", &entities.ItemThumbnail{})
 
 	fmt.Println("migration done")
 	return nil

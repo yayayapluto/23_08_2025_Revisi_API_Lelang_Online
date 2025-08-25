@@ -6,13 +6,14 @@ import (
 )
 
 type RouteConfig struct {
-	App                 *fiber.App
-	ObjectTypeHandler   handlers.ObjectTypeHandler
-	OrganizerHandler    handlers.OrganizerHandler
-	ItemHandler         handlers.ItemHandler
-	ItemDetailHandler   handlers.ItemDetailHandler
-	ItemDocumentHandler handlers.ItemDocumentHandler
-	ItemGradeHandler    handlers.ItemGradeHandler
+	App                  *fiber.App
+	ObjectTypeHandler    handlers.ObjectTypeHandler
+	OrganizerHandler     handlers.OrganizerHandler
+	ItemHandler          handlers.ItemHandler
+	ItemDetailHandler    handlers.ItemDetailHandler
+	ItemDocumentHandler  handlers.ItemDocumentHandler
+	ItemGradeHandler     handlers.ItemGradeHandler
+	ItemThumbnailHandler handlers.ItemThumbnailHandler
 }
 
 func (r *RouteConfig) Setup() {
@@ -22,6 +23,7 @@ func (r *RouteConfig) Setup() {
 	r.ItemDetail()
 	r.ItemDocument()
 	r.ItemGrade()
+	r.ItemThumbnail()
 }
 
 func (r *RouteConfig) ObjectType() {
@@ -76,4 +78,13 @@ func (r *RouteConfig) ItemGrade() {
 	group.Get("/:itemID", r.ItemGradeHandler.Get)
 	group.Put("/:itemID", r.ItemGradeHandler.Update)
 	group.Delete("/:itemID", r.ItemGradeHandler.Delete)
+}
+
+func (r *RouteConfig) ItemThumbnail() {
+	group := r.App.Group("/api/itemThumbnails")
+	group.Get("/", r.ItemThumbnailHandler.List)
+	group.Post("/", r.ItemThumbnailHandler.Create)
+	group.Get("/:itemID", r.ItemThumbnailHandler.Get)
+	group.Put("/:itemID", r.ItemThumbnailHandler.Update)
+	group.Delete("/:itemID", r.ItemThumbnailHandler.Delete)
 }

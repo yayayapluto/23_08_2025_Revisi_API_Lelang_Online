@@ -11,6 +11,7 @@ import (
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/itemDetail"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/itemDocument"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/itemGrade"
+	"github.com/yayayapluto/revisi_api_lelang_online/pkg/itemThumbnail"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/objectType"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/organizer"
 	"gorm.io/gorm"
@@ -38,6 +39,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	itemDetailRepository := itemDetail.NewRepository(db)
 	itemDocumentRepository := itemDocument.NewRepository(db)
 	itemGradeRepository := itemGrade.NewRepository(db)
+	itemThumbnailRepository := itemThumbnail.NewRepository(db)
 
 	// Services
 	objectTypeService := objectType.NewService(objectTypeRepository)
@@ -47,6 +49,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	itemDetailService := itemDetail.NewService(itemDetailRepository)
 	itemDocumentService := itemDocument.NewService(itemDocumentRepository)
 	itemGradeService := itemGrade.NewService(itemGradeRepository)
+	itemThumbnailService := itemThumbnail.NewService(itemThumbnailRepository, fileService)
 
 	// Handlers
 	objectTypeHandler := handlers.NewObjectTypeHandler(objectTypeService)
@@ -55,15 +58,17 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	itemDetailHandler := handlers.NewItemDetailHandler(itemDetailService)
 	itemDocumentHandler := handlers.NewItemDocumentHandler(itemDocumentService)
 	itemGradeHandler := handlers.NewItemGradeHandler(itemGradeService)
+	itemThumbnailHandler := handlers.NewItemThumbnailHandler(itemThumbnailService)
 
 	routeConfig := routes.RouteConfig{
-		App:                 app,
-		ObjectTypeHandler:   objectTypeHandler,
-		OrganizerHandler:    organizerHandler,
-		ItemHandler:         itemHandler,
-		ItemDetailHandler:   itemDetailHandler,
-		ItemDocumentHandler: itemDocumentHandler,
-		ItemGradeHandler:    itemGradeHandler,
+		App:                  app,
+		ObjectTypeHandler:    objectTypeHandler,
+		OrganizerHandler:     organizerHandler,
+		ItemHandler:          itemHandler,
+		ItemDetailHandler:    itemDetailHandler,
+		ItemDocumentHandler:  itemDocumentHandler,
+		ItemGradeHandler:     itemGradeHandler,
+		ItemThumbnailHandler: itemThumbnailHandler,
 	}
 	routeConfig.Setup()
 

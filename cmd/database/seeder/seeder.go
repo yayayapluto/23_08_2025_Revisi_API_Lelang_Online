@@ -30,6 +30,9 @@ func Seed(db *gorm.DB) error {
 	if err := disableFK(db, "item_grades"); err != nil {
 		return err
 	}
+	if err := disableFK(db, "item_thumbnails"); err != nil {
+		return err
+	}
 
 	// Data master
 	SeedObjectType(db, 10)
@@ -41,6 +44,7 @@ func Seed(db *gorm.DB) error {
 	SeedItemDetail(db, 30)
 	SeedItemDocument(db, 30)
 	SeedItemGrade(db, 30)
+	SeedItemThumbnail(db, 30)
 
 	if err := enableFK(db, "object_types"); err != nil {
 		return err
@@ -61,6 +65,9 @@ func Seed(db *gorm.DB) error {
 		return err
 	}
 	if err := enableFK(db, "item_grades"); err != nil {
+		return err
+	}
+	if err := enableFK(db, "item_thumbnails"); err != nil {
 		return err
 	}
 
@@ -246,4 +253,22 @@ func SeedItemGrade(db *gorm.DB, total int) {
 		}
 	}
 	log.Println("seeding item done")
+}
+
+func SeedItemThumbnail(db *gorm.DB, total int) {
+	if err := db.Exec("TRUNCATE TABLE item_thumbnails RESTART IDENTITY CASCADE").Error; err != nil {
+		panic(err)
+	}
+	for i := 0; i < total; i++ {
+		data := &entities.ItemThumbnail{
+			Name:   gofakeit.BuzzWord(),
+			ItemID: uint(gofakeit.Number(1, 30)),
+			FileID: uint(gofakeit.Number(1, 30)),
+		}
+		if err := db.Create(data).Error; err != nil {
+			log.Printf("skipped entry %d: %s", data.ItemID, err)
+			continue
+		}
+	}
+	log.Println("seeding item_thumbnail done")
 }
