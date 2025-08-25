@@ -7,6 +7,5 @@ type ItemThumbnail struct {
 	FileID uint   `json:"file_id" gorm:"not null"`
 
 	TimeStamp
-	Item Item `gorm:"foreignKey:ItemID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
-	File File `gorm:"foreignKey:FileID;constraint:OnUpdate:CASCADE;OnDelete:CASCADE"`
+	File File `json:"file,omitempty" gorm:"foreignKey:FileID;constraint:OnUpdate:CASCADE;OnDelete:CASCADE"`
 }

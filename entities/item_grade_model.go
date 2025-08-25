@@ -10,5 +10,4 @@ type ItemGrade struct {
 	Machine  string `json:"machine"`
 
 	TimeStamp
-	Item Item `gorm:"foreignKey:ItemID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }

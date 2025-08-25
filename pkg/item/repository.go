@@ -33,7 +33,7 @@ func (r *repository) List(ctx context.Context, offset, limit int, search, sortDi
 		return nil, 0, err
 	}
 
-	query := r.db.WithContext(ctx).Model(&entities.Item{}).Preload("ObjectType").Preload("File")
+	query := r.db.WithContext(ctx).Model(&entities.Item{}).Preload("ObjectType").Preload("File").Preload("ItemDetail").Preload("ItemDocument").Preload("ItemGrade").Preload("ItemThumbnails.File")
 	if search != nil {
 		query = query.Where("name LIKE ?", "%"+*search+"%")
 	}
@@ -79,7 +79,7 @@ func (r *repository) Create(ctx context.Context, item *entities.Item) (*entities
 	}
 
 	var itemRes entities.Item
-	if err := r.db.WithContext(ctx).Preload("ObjectType").Preload("File").First(&itemRes, item.ID).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("ObjectType").Preload("File").Preload("ItemDetail").Preload("ItemDocument").Preload("ItemGrade").Preload("ItemThumbnails.File").First(&itemRes, item.ID).Error; err != nil {
 		return nil, err
 	}
 
@@ -88,7 +88,7 @@ func (r *repository) Create(ctx context.Context, item *entities.Item) (*entities
 
 func (r *repository) Get(ctx context.Context, id uint) (*entities.Item, error) {
 	var item entities.Item
-	if err := r.db.WithContext(ctx).Model(&entities.Item{}).Preload("ObjectType").Preload("File").First(&item, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.Item{}).Preload("ObjectType").Preload("File").Preload("ItemDetail").Preload("ItemDocument").Preload("ItemGrade").Preload("ItemThumbnails.File").First(&item, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, gorm.ErrRecordNotFound
 		}
@@ -130,7 +130,7 @@ func (r *repository) Update(ctx context.Context, item *entities.Item) (*entities
 	}
 
 	var result entities.Item
-	if err := r.db.WithContext(ctx).Model(&entities.Item{}).Preload("ObjectType").Preload("File").First(&result, item.ID).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.Item{}).Preload("ObjectType").Preload("File").Preload("ItemDetail").Preload("ItemDocument").Preload("ItemGrade").Preload("ItemThumbnails.File").First(&result, item.ID).Error; err != nil {
 		return nil, err
 	}
 

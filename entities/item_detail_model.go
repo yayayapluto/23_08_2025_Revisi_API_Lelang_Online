@@ -22,6 +22,4 @@ type ItemDetail struct {
 	StnkDate      *time.Time `json:"stnk_date"`
 
 	TimeStamp
-
-	Item Item `gorm:"foreignKey:ItemID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }

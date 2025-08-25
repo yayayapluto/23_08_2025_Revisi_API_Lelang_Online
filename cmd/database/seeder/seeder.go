@@ -3,34 +3,35 @@ package seeder
 import (
 	"fmt"
 	"github.com/brianvoe/gofakeit/v7"
+	"github.com/yayayapluto/revisi_api_lelang_online/cmd/database/fk"
 	"github.com/yayayapluto/revisi_api_lelang_online/entities"
 	"gorm.io/gorm"
 	"log"
 )
 
 func Seed(db *gorm.DB) error {
-	if err := disableFK(db, "object_types"); err != nil {
+	if err := fk.DisableFK(db, "object_types"); err != nil {
 		return err
 	}
-	if err := disableFK(db, "organizers"); err != nil {
+	if err := fk.DisableFK(db, "organizers"); err != nil {
 		return err
 	}
-	if err := disableFK(db, "files"); err != nil {
+	if err := fk.DisableFK(db, "files"); err != nil {
 		return err
 	}
-	if err := disableFK(db, "items"); err != nil {
+	if err := fk.DisableFK(db, "items"); err != nil {
 		return err
 	}
-	if err := disableFK(db, "item_details"); err != nil {
+	if err := fk.DisableFK(db, "item_details"); err != nil {
 		return err
 	}
-	if err := disableFK(db, "item_documents"); err != nil {
+	if err := fk.DisableFK(db, "item_documents"); err != nil {
 		return err
 	}
-	if err := disableFK(db, "item_grades"); err != nil {
+	if err := fk.DisableFK(db, "item_grades"); err != nil {
 		return err
 	}
-	if err := disableFK(db, "item_thumbnails"); err != nil {
+	if err := fk.DisableFK(db, "item_thumbnails"); err != nil {
 		return err
 	}
 
@@ -46,41 +47,33 @@ func Seed(db *gorm.DB) error {
 	SeedItemGrade(db, 30)
 	SeedItemThumbnail(db, 30)
 
-	if err := enableFK(db, "object_types"); err != nil {
+	if err := fk.EnableFK(db, "object_types"); err != nil {
 		return err
 	}
-	if err := enableFK(db, "organizers"); err != nil {
+	if err := fk.EnableFK(db, "organizers"); err != nil {
 		return err
 	}
-	if err := enableFK(db, "files"); err != nil {
+	if err := fk.EnableFK(db, "files"); err != nil {
 		return err
 	}
-	if err := enableFK(db, "items"); err != nil {
+	if err := fk.EnableFK(db, "items"); err != nil {
 		return err
 	}
-	if err := enableFK(db, "item_details"); err != nil {
+	if err := fk.EnableFK(db, "item_details"); err != nil {
 		return err
 	}
-	if err := enableFK(db, "item_documents"); err != nil {
+	if err := fk.EnableFK(db, "item_documents"); err != nil {
 		return err
 	}
-	if err := enableFK(db, "item_grades"); err != nil {
+	if err := fk.EnableFK(db, "item_grades"); err != nil {
 		return err
 	}
-	if err := enableFK(db, "item_thumbnails"); err != nil {
+	if err := fk.EnableFK(db, "item_thumbnails"); err != nil {
 		return err
 	}
 
 	fmt.Println("Seeding done")
 	return nil
-}
-
-func disableFK(db *gorm.DB, table string) error {
-	return db.Exec(fmt.Sprintf(`ALTER TABLE %s DISABLE TRIGGER ALL;`, table)).Error
-}
-
-func enableFK(db *gorm.DB, table string) error {
-	return db.Exec(fmt.Sprintf(`ALTER TABLE %s ENABLE TRIGGER ALL;`, table)).Error
 }
 
 func SeedObjectType(db *gorm.DB, total int) {

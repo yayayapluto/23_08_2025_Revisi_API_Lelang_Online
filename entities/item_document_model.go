@@ -12,5 +12,4 @@ type ItemDocument struct {
 	Box              *bool `json:"box"`
 
 	TimeStamp
-	Item Item `gorm:"foreignKey:ItemID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
