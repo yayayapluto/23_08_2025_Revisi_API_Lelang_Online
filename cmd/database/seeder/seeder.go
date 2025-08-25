@@ -10,70 +10,57 @@ import (
 )
 
 func Seed(db *gorm.DB) error {
-	if err := fk.DisableFK(db, "object_types"); err != nil {
-		return err
+	tables := []string{
+		"object_types", "organizers", "files",
+		"items", "item_details", "item_documents",
+		"item_grades", "item_thumbnails", "pics",
 	}
-	if err := fk.DisableFK(db, "organizers"); err != nil {
-		return err
-	}
-	if err := fk.DisableFK(db, "files"); err != nil {
-		return err
-	}
-	if err := fk.DisableFK(db, "items"); err != nil {
-		return err
-	}
-	if err := fk.DisableFK(db, "item_details"); err != nil {
-		return err
-	}
-	if err := fk.DisableFK(db, "item_documents"); err != nil {
-		return err
-	}
-	if err := fk.DisableFK(db, "item_grades"); err != nil {
-		return err
-	}
-	if err := fk.DisableFK(db, "item_thumbnails"); err != nil {
+
+	if err := toggleFK(db, tables, false); err != nil {
 		return err
 	}
 
-	// Data master
+	truncateTables(db, tables)
+
 	SeedObjectType(db, 10)
 	SeedOrganizer(db, 20)
-
-	// Auction-related
 	SeedFile(db, 30)
 	SeedItem(db, 30)
 	SeedItemDetail(db, 30)
 	SeedItemDocument(db, 30)
 	SeedItemGrade(db, 30)
 	SeedItemThumbnail(db, 30)
+	SeedPIC(db, 10)
 
-	if err := fk.EnableFK(db, "object_types"); err != nil {
-		return err
-	}
-	if err := fk.EnableFK(db, "organizers"); err != nil {
-		return err
-	}
-	if err := fk.EnableFK(db, "files"); err != nil {
-		return err
-	}
-	if err := fk.EnableFK(db, "items"); err != nil {
-		return err
-	}
-	if err := fk.EnableFK(db, "item_details"); err != nil {
-		return err
-	}
-	if err := fk.EnableFK(db, "item_documents"); err != nil {
-		return err
-	}
-	if err := fk.EnableFK(db, "item_grades"); err != nil {
-		return err
-	}
-	if err := fk.EnableFK(db, "item_thumbnails"); err != nil {
+	if err := toggleFK(db, tables, true); err != nil {
 		return err
 	}
 
 	fmt.Println("Seeding done")
 	return nil
+}
+
+func toggleFK(db *gorm.DB, tables []string, enable bool) error {
+	for _, t := range tables {
+		var err error
+		if enable {
+			err = fk.EnableFK(db, t)
+		} else {
+			err = fk.DisableFK(db, t)
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func truncateTables(db *gorm.DB, tables []string) {
+	for _, t := range tables {
+		if err := db.Exec(fmt.Sprintf("TRUNCATE TABLE %s RESTART IDENTITY CASCADE", t)).Error; err != nil {
+			panic(err)
+		}
+	}
 }
 
 func SeedObjectType(db *gorm.DB, total int) {
@@ -260,6 +247,23 @@ func SeedItemThumbnail(db *gorm.DB, total int) {
 		}
 		if err := db.Create(data).Error; err != nil {
 			log.Printf("skipped entry %d: %s", data.ItemID, err)
+			continue
+		}
+	}
+	log.Println("seeding item_thumbnail done")
+}
+
+func SeedPIC(db *gorm.DB, total int) {
+	if err := db.Exec("TRUNCATE TABLE pics RESTART IDENTITY CASCADE").Error; err != nil {
+		panic(err)
+	}
+	for i := 0; i < total; i++ {
+		data := &entities.PIC{
+			Name:        gofakeit.BuzzWord(),
+			PhoneNumber: gofakeit.Phone(),
+		}
+		if err := db.Create(data).Error; err != nil {
+			log.Printf("skipped entry %d: %s", data.Name, err)
 			continue
 		}
 	}

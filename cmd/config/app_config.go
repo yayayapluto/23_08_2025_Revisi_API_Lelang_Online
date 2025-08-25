@@ -14,6 +14,7 @@ import (
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/itemThumbnail"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/objectType"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/organizer"
+	"github.com/yayayapluto/revisi_api_lelang_online/pkg/pic"
 	"gorm.io/gorm"
 )
 
@@ -40,6 +41,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	itemDocumentRepository := itemDocument.NewRepository(db)
 	itemGradeRepository := itemGrade.NewRepository(db)
 	itemThumbnailRepository := itemThumbnail.NewRepository(db)
+	picRepository := pic.NewRepository(db)
 
 	// Services
 	objectTypeService := objectType.NewService(objectTypeRepository)
@@ -50,6 +52,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	itemDocumentService := itemDocument.NewService(itemDocumentRepository)
 	itemGradeService := itemGrade.NewService(itemGradeRepository)
 	itemThumbnailService := itemThumbnail.NewService(itemThumbnailRepository, fileService)
+	picService := pic.NewService(picRepository)
 
 	// Handlers
 	objectTypeHandler := handlers.NewObjectTypeHandler(objectTypeService)
@@ -59,6 +62,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	itemDocumentHandler := handlers.NewItemDocumentHandler(itemDocumentService)
 	itemGradeHandler := handlers.NewItemGradeHandler(itemGradeService)
 	itemThumbnailHandler := handlers.NewItemThumbnailHandler(itemThumbnailService)
+	picHandler := handlers.NewPICHandler(picService)
 
 	routeConfig := routes.RouteConfig{
 		App:                  app,
@@ -69,6 +73,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 		ItemDocumentHandler:  itemDocumentHandler,
 		ItemGradeHandler:     itemGradeHandler,
 		ItemThumbnailHandler: itemThumbnailHandler,
+		PIChandler:           picHandler,
 	}
 	routeConfig.Setup()
 
