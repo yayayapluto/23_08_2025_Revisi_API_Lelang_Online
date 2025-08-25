@@ -6,11 +6,12 @@ import (
 )
 
 type RouteConfig struct {
-	App               *fiber.App
-	ObjectTypeHandler handlers.ObjectTypeHandler
-	OrganizerHandler  handlers.OrganizerHandler
-	ItemHandler       handlers.ItemHandler
-	ItemDetailHandler handlers.ItemDetailHandler
+	App                 *fiber.App
+	ObjectTypeHandler   handlers.ObjectTypeHandler
+	OrganizerHandler    handlers.OrganizerHandler
+	ItemHandler         handlers.ItemHandler
+	ItemDetailHandler   handlers.ItemDetailHandler
+	ItemDocumentHandler handlers.ItemDocumentHandler
 }
 
 func (r *RouteConfig) Setup() {
@@ -18,6 +19,7 @@ func (r *RouteConfig) Setup() {
 	r.Organizer()
 	r.Item()
 	r.ItemDetail()
+	r.ItemDocument()
 }
 
 func (r *RouteConfig) ObjectType() {
@@ -54,4 +56,13 @@ func (r *RouteConfig) ItemDetail() {
 	group.Get("/:itemID", r.ItemDetailHandler.Get)
 	group.Put("/:itemID", r.ItemDetailHandler.Update)
 	group.Delete("/:itemID", r.ItemDetailHandler.Delete)
+}
+
+func (r *RouteConfig) ItemDocument() {
+	group := r.App.Group("/api/itemDocuments")
+	group.Get("/", r.ItemDocumentHandler.List)
+	group.Post("/", r.ItemDocumentHandler.Create)
+	group.Get("/:itemID", r.ItemDocumentHandler.Get)
+	group.Put("/:itemID", r.ItemDocumentHandler.Update)
+	group.Delete("/:itemID", r.ItemDocumentHandler.Delete)
 }

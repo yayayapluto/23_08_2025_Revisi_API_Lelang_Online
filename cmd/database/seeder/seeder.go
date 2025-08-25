@@ -9,13 +9,6 @@ import (
 )
 
 func Seed(db *gorm.DB) error {
-	// Disable foreign key check untuk tiap tabel
-	if err := disableFK(db, "items"); err != nil {
-		return err
-	}
-	if err := disableFK(db, "item_details"); err != nil {
-		return err
-	}
 	if err := disableFK(db, "object_types"); err != nil {
 		return err
 	}
@@ -24,6 +17,14 @@ func Seed(db *gorm.DB) error {
 	}
 	if err := disableFK(db, "files"); err != nil {
 		return err
+	}
+	if err := disableFK(db, "items"); err != nil {
+		return err
+	}
+	if err := disableFK(db, "item_details"); err != nil {
+		return err
+	}
+	if err := disableFK(db, "item_documents"); err != nil {
 	}
 
 	// Data master
@@ -34,14 +35,8 @@ func Seed(db *gorm.DB) error {
 	SeedFile(db, 30)
 	SeedItem(db, 30)
 	SeedItemDetail(db, 30)
+	SeedItemDocument(db, 30)
 
-	// Enable foreign key check lagi
-	if err := enableFK(db, "items"); err != nil {
-		return err
-	}
-	if err := enableFK(db, "item_details"); err != nil {
-		return err
-	}
 	if err := enableFK(db, "object_types"); err != nil {
 		return err
 	}
@@ -49,6 +44,15 @@ func Seed(db *gorm.DB) error {
 		return err
 	}
 	if err := enableFK(db, "files"); err != nil {
+		return err
+	}
+	if err := enableFK(db, "items"); err != nil {
+		return err
+	}
+	if err := enableFK(db, "item_details"); err != nil {
+		return err
+	}
+	if err := enableFK(db, "item_documents"); err != nil {
 		return err
 	}
 
@@ -182,4 +186,36 @@ func SeedItemDetail(db *gorm.DB, total int) {
 		}
 	}
 	log.Println("seeding item_detail done")
+}
+
+func SeedItemDocument(db *gorm.DB, total int) {
+	if err := db.Exec("TRUNCATE TABLE item_documents RESTART IDENTITY CASCADE").Error; err != nil {
+		panic(err)
+	}
+	for i := 0; i < total; i++ {
+
+		Bpkb := gofakeit.Bool()
+		Stnk := gofakeit.Bool()
+		Facture := gofakeit.Bool()
+		Receipt := gofakeit.Bool()
+		OwnershipRelease := gofakeit.Bool()
+		Warranty := gofakeit.Bool()
+		Box := gofakeit.Bool()
+
+		data := &entities.ItemDocument{
+			ItemID:           uint(gofakeit.Number(1, 30)),
+			Bpkb:             &Bpkb,
+			Stnk:             &Stnk,
+			Facture:          &Facture,
+			Receipt:          &Receipt,
+			OwnershipRelease: &OwnershipRelease,
+			Warranty:         &Warranty,
+			Box:              &Box,
+		}
+		if err := db.Create(data).Error; err != nil {
+			log.Printf("skipped entry %d: %s", data.ItemID, err)
+			continue
+		}
+	}
+	log.Println("seeding item done")
 }
