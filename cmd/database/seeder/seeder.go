@@ -25,6 +25,10 @@ func Seed(db *gorm.DB) error {
 		return err
 	}
 	if err := disableFK(db, "item_documents"); err != nil {
+		return err
+	}
+	if err := disableFK(db, "item_grades"); err != nil {
+		return err
 	}
 
 	// Data master
@@ -36,6 +40,7 @@ func Seed(db *gorm.DB) error {
 	SeedItem(db, 30)
 	SeedItemDetail(db, 30)
 	SeedItemDocument(db, 30)
+	SeedItemGrade(db, 30)
 
 	if err := enableFK(db, "object_types"); err != nil {
 		return err
@@ -53,6 +58,9 @@ func Seed(db *gorm.DB) error {
 		return err
 	}
 	if err := enableFK(db, "item_documents"); err != nil {
+		return err
+	}
+	if err := enableFK(db, "item_grades"); err != nil {
 		return err
 	}
 
@@ -211,6 +219,26 @@ func SeedItemDocument(db *gorm.DB, total int) {
 			OwnershipRelease: &OwnershipRelease,
 			Warranty:         &Warranty,
 			Box:              &Box,
+		}
+		if err := db.Create(data).Error; err != nil {
+			log.Printf("skipped entry %d: %s", data.ItemID, err)
+			continue
+		}
+	}
+	log.Println("seeding item done")
+}
+
+func SeedItemGrade(db *gorm.DB, total int) {
+	if err := db.Exec("TRUNCATE TABLE item_grades RESTART IDENTITY CASCADE").Error; err != nil {
+		panic(err)
+	}
+	for i := 0; i < total; i++ {
+		data := &entities.ItemGrade{
+			ItemID:   uint(gofakeit.Number(1, 30)),
+			Interior: gofakeit.RandomString([]string{"a", "b", "c", "d", "e", "f"}),
+			Exterior: gofakeit.RandomString([]string{"a", "b", "c", "d", "e", "f"}),
+			Frame:    gofakeit.RandomString([]string{"a", "b", "c", "d", "e", "f"}),
+			Machine:  gofakeit.RandomString([]string{"a", "b", "c", "d", "e", "f"}),
 		}
 		if err := db.Create(data).Error; err != nil {
 			log.Printf("skipped entry %d: %s", data.ItemID, err)

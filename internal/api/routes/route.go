@@ -12,6 +12,7 @@ type RouteConfig struct {
 	ItemHandler         handlers.ItemHandler
 	ItemDetailHandler   handlers.ItemDetailHandler
 	ItemDocumentHandler handlers.ItemDocumentHandler
+	ItemGradeHandler    handlers.ItemGradeHandler
 }
 
 func (r *RouteConfig) Setup() {
@@ -20,6 +21,7 @@ func (r *RouteConfig) Setup() {
 	r.Item()
 	r.ItemDetail()
 	r.ItemDocument()
+	r.ItemGrade()
 }
 
 func (r *RouteConfig) ObjectType() {
@@ -65,4 +67,13 @@ func (r *RouteConfig) ItemDocument() {
 	group.Get("/:itemID", r.ItemDocumentHandler.Get)
 	group.Put("/:itemID", r.ItemDocumentHandler.Update)
 	group.Delete("/:itemID", r.ItemDocumentHandler.Delete)
+}
+
+func (r *RouteConfig) ItemGrade() {
+	group := r.App.Group("/api/itemGrades")
+	group.Get("/", r.ItemGradeHandler.List)
+	group.Post("/", r.ItemGradeHandler.Create)
+	group.Get("/:itemID", r.ItemGradeHandler.Get)
+	group.Put("/:itemID", r.ItemGradeHandler.Update)
+	group.Delete("/:itemID", r.ItemGradeHandler.Delete)
 }

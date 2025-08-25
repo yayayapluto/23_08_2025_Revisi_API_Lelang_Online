@@ -10,6 +10,7 @@ import (
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/item"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/itemDetail"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/itemDocument"
+	"github.com/yayayapluto/revisi_api_lelang_online/pkg/itemGrade"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/objectType"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/organizer"
 	"gorm.io/gorm"
@@ -36,6 +37,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	itemRepository := item.NewRepository(db)
 	itemDetailRepository := itemDetail.NewRepository(db)
 	itemDocumentRepository := itemDocument.NewRepository(db)
+	itemGradeRepository := itemGrade.NewRepository(db)
 
 	// Services
 	objectTypeService := objectType.NewService(objectTypeRepository)
@@ -44,6 +46,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	itemService := item.NewService(itemRepository, fileService)
 	itemDetailService := itemDetail.NewService(itemDetailRepository)
 	itemDocumentService := itemDocument.NewService(itemDocumentRepository)
+	itemGradeService := itemGrade.NewService(itemGradeRepository)
 
 	// Handlers
 	objectTypeHandler := handlers.NewObjectTypeHandler(objectTypeService)
@@ -51,6 +54,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	itemHandler := handlers.NewItemHandler(itemService)
 	itemDetailHandler := handlers.NewItemDetailHandler(itemDetailService)
 	itemDocumentHandler := handlers.NewItemDocumentHandler(itemDocumentService)
+	itemGradeHandler := handlers.NewItemGradeHandler(itemGradeService)
 
 	routeConfig := routes.RouteConfig{
 		App:                 app,
@@ -59,6 +63,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 		ItemHandler:         itemHandler,
 		ItemDetailHandler:   itemDetailHandler,
 		ItemDocumentHandler: itemDocumentHandler,
+		ItemGradeHandler:    itemGradeHandler,
 	}
 	routeConfig.Setup()
 
