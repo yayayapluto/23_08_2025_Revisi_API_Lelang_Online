@@ -14,12 +14,14 @@ type RouteConfig struct {
 	ItemDocumentHandler  handlers.ItemDocumentHandler
 	ItemGradeHandler     handlers.ItemGradeHandler
 	ItemThumbnailHandler handlers.ItemThumbnailHandler
+	PIChandler           handlers.PICHandler
 }
 
 func (r *RouteConfig) Setup() {
 	r.ObjectType()
 	r.Organizer()
 	r.Item()
+	r.PIC()
 }
 
 func (r *RouteConfig) ObjectType() {
@@ -71,4 +73,13 @@ func (r *RouteConfig) Item() {
 	thumbnails.Post("/", r.ItemThumbnailHandler.Create)
 	thumbnails.Put("/", r.ItemThumbnailHandler.Update)
 	thumbnails.Delete("/", r.ItemThumbnailHandler.Delete)
+}
+
+func (r *RouteConfig) PIC() {
+	group := r.App.Group("/api/pics")
+	group.Get("/", r.PIChandler.List)
+	group.Post("/", r.PIChandler.Create)
+	group.Get("/:id", r.PIChandler.Get)
+	group.Put("/:id", r.PIChandler.Update)
+	group.Delete("/:id", r.PIChandler.Delete)
 }

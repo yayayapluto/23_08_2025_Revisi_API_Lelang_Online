@@ -18,6 +18,7 @@ func Migrate(db *gorm.DB) error {
 	doMigrate(db, "item_documents", &entities.ItemDocument{})
 	doMigrate(db, "item_grades", &entities.ItemGrade{})
 	doMigrate(db, "item_thumbnails", &entities.ItemThumbnail{})
+	doMigrate(db, "pics", &entities.PIC{})
 
 	fmt.Println("migration done")
 	return nil
@@ -28,7 +29,7 @@ func doMigrate(db *gorm.DB, tblName string, entity interface{}) {
 		log.Fatal("failed to disable fk")
 	}
 
-	if err := db.Exec(fmt.Sprintf("DROP TABLE %s CASCADE", tblName)).Error; err != nil {
+	if err := db.Exec(fmt.Sprintf("DROP TABLE IF EXISTS %s CASCADE", tblName)).Error; err != nil {
 		log.Printf("failed to dropping table %s: %s\n", tblName, err)
 	}
 	if err := db.AutoMigrate(entity); err != nil {
