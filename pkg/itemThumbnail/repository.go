@@ -49,20 +49,12 @@ func (r *repository) Create(ctx context.Context, e *entities.ItemThumbnail) (*en
 		return nil, errors.New("item_id is required")
 	}
 
-	var count int64
-	if err := r.db.WithContext(ctx).Model(&entities.ItemThumbnail{}).Where("item_id = ?", e.ItemID).Count(&count).Error; err != nil {
-		return nil, err
-	}
-	if count != 0 {
-		return nil, gorm.ErrDuplicatedKey
-	}
-
 	if err := r.db.WithContext(ctx).Create(e).Error; err != nil {
 		return nil, err
 	}
 
 	var result entities.ItemThumbnail
-	if err := r.db.WithContext(ctx).Model(&entities.ItemThumbnail{}).Where("item_id = ?", e.ItemID).Preload("Item.ObjectType").Preload("Item.File").Preload("File").Find(&result).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.ItemThumbnail{}).Where("item_id = ?", e.ItemID).Preload("Item.ObjectType").Preload("Item.File").Preload("File").Order("created_at desc").First(&result).Error; err != nil {
 		return nil, err
 	}
 

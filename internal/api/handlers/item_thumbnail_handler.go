@@ -55,9 +55,15 @@ func (i *itemThumbnailHandler) Create(ctx *fiber.Ctx) error {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "failed to parse request body", err)
 	}
 
+	itemId, err := ctx.ParamsInt("id")
+	if err != nil {
+		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "invalid item_id param", err)
+	}
+	req.ItemID = uint(itemId)
+
 	result, err := i.service.Create(ctx.UserContext(), &req, header)
 	if err != nil {
-		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "Failed to create item grade", err)
+		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "Failed to create item thumbnail", err)
 	}
 
 	newUrlPath, err := utils.BuildFileURL(ctx, &result.File)
@@ -66,11 +72,11 @@ func (i *itemThumbnailHandler) Create(ctx *fiber.Ctx) error {
 	}
 	result.File.Path = *newUrlPath
 
-	return presenters.SuccessResponse(ctx, fiber.StatusCreated, "successfully create item grade", result)
+	return presenters.SuccessResponse(ctx, fiber.StatusCreated, "successfully create item thumbnail", result)
 }
 
 func (i *itemThumbnailHandler) Get(ctx *fiber.Ctx) error {
-	itemId, err := ctx.ParamsInt("itemID")
+	itemId, err := ctx.ParamsInt("id")
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "invalid item_id param", err)
 	}
@@ -90,7 +96,7 @@ func (i *itemThumbnailHandler) Get(ctx *fiber.Ctx) error {
 }
 
 func (i *itemThumbnailHandler) Update(ctx *fiber.Ctx) error {
-	itemId, err := ctx.ParamsInt("itemID")
+	itemId, err := ctx.ParamsInt("id")
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "invalid item_id param", err)
 	}
@@ -125,7 +131,7 @@ func (i *itemThumbnailHandler) Update(ctx *fiber.Ctx) error {
 }
 
 func (i *itemThumbnailHandler) Delete(ctx *fiber.Ctx) error {
-	itemId, err := ctx.ParamsInt("itemID")
+	itemId, err := ctx.ParamsInt("id")
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "invalid item_id param", err)
 	}

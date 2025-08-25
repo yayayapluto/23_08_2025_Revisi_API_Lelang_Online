@@ -43,6 +43,12 @@ func (i *itemDetailHandler) Create(ctx *fiber.Ctx) error {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "failed to parse request body", err)
 	}
 
+	itemId, err := ctx.ParamsInt("id")
+	if err != nil {
+		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "invalid item_id param", err)
+	}
+	itemDetailReq.ItemID = uint(itemId)
+
 	itemDetailRes, err := i.service.Create(ctx.UserContext(), &itemDetailReq)
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to create item detail", err)
@@ -52,7 +58,7 @@ func (i *itemDetailHandler) Create(ctx *fiber.Ctx) error {
 }
 
 func (i *itemDetailHandler) Get(ctx *fiber.Ctx) error {
-	itemId, err := ctx.ParamsInt("itemID")
+	itemId, err := ctx.ParamsInt("id")
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "invalid item_id param", err)
 	}
@@ -66,7 +72,7 @@ func (i *itemDetailHandler) Get(ctx *fiber.Ctx) error {
 }
 
 func (i *itemDetailHandler) Update(ctx *fiber.Ctx) error {
-	itemId, err := ctx.ParamsInt("itemID")
+	itemId, err := ctx.ParamsInt("id")
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "invalid item_id param", err)
 	}
@@ -139,7 +145,7 @@ func (i *itemDetailHandler) Update(ctx *fiber.Ctx) error {
 }
 
 func (i *itemDetailHandler) Delete(ctx *fiber.Ctx) error {
-	itemId, err := ctx.ParamsInt("itemID")
+	itemId, err := ctx.ParamsInt("id")
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "invalid item_id param", err)
 	}

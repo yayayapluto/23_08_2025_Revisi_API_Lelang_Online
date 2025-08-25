@@ -20,10 +20,6 @@ func (r *RouteConfig) Setup() {
 	r.ObjectType()
 	r.Organizer()
 	r.Item()
-	r.ItemDetail()
-	r.ItemDocument()
-	r.ItemGrade()
-	r.ItemThumbnail()
 }
 
 func (r *RouteConfig) ObjectType() {
@@ -51,40 +47,28 @@ func (r *RouteConfig) Item() {
 	group.Get("/:id", r.ItemHandler.Get)
 	group.Put("/:id", r.ItemHandler.Update)
 	group.Delete("/:id", r.ItemHandler.Delete)
-}
 
-func (r *RouteConfig) ItemDetail() {
-	group := r.App.Group("/api/itemDetails")
-	group.Get("/", r.ItemDetailHandler.List)
-	group.Post("/", r.ItemDetailHandler.Create)
-	group.Get("/:itemID", r.ItemDetailHandler.Get)
-	group.Put("/:itemID", r.ItemDetailHandler.Update)
-	group.Delete("/:itemID", r.ItemDetailHandler.Delete)
-}
+	detail := group.Group("/:id/detail")
+	detail.Get("/", r.ItemDetailHandler.Get)
+	detail.Post("/", r.ItemDetailHandler.Create)
+	detail.Put("/", r.ItemDetailHandler.Update)
+	detail.Delete("/", r.ItemDetailHandler.Delete)
 
-func (r *RouteConfig) ItemDocument() {
-	group := r.App.Group("/api/itemDocuments")
-	group.Get("/", r.ItemDocumentHandler.List)
-	group.Post("/", r.ItemDocumentHandler.Create)
-	group.Get("/:itemID", r.ItemDocumentHandler.Get)
-	group.Put("/:itemID", r.ItemDocumentHandler.Update)
-	group.Delete("/:itemID", r.ItemDocumentHandler.Delete)
-}
+	document := group.Group("/:id/document")
+	document.Get("/", r.ItemDocumentHandler.Get)
+	document.Post("/", r.ItemDocumentHandler.Create)
+	document.Put("/", r.ItemDocumentHandler.Update)
+	document.Delete("/", r.ItemDocumentHandler.Delete)
 
-func (r *RouteConfig) ItemGrade() {
-	group := r.App.Group("/api/itemGrades")
-	group.Get("/", r.ItemGradeHandler.List)
-	group.Post("/", r.ItemGradeHandler.Create)
-	group.Get("/:itemID", r.ItemGradeHandler.Get)
-	group.Put("/:itemID", r.ItemGradeHandler.Update)
-	group.Delete("/:itemID", r.ItemGradeHandler.Delete)
-}
+	grade := group.Group("/:id/grade")
+	grade.Get("/", r.ItemGradeHandler.Get)
+	grade.Post("/", r.ItemGradeHandler.Create)
+	grade.Put("/", r.ItemGradeHandler.Update)
+	grade.Delete("/", r.ItemGradeHandler.Delete)
 
-func (r *RouteConfig) ItemThumbnail() {
-	group := r.App.Group("/api/itemThumbnails")
-	group.Get("/", r.ItemThumbnailHandler.List)
-	group.Post("/", r.ItemThumbnailHandler.Create)
-	group.Get("/:itemID", r.ItemThumbnailHandler.Get)
-	group.Put("/:itemID", r.ItemThumbnailHandler.Update)
-	group.Delete("/:itemID", r.ItemThumbnailHandler.Delete)
+	thumbnails := group.Group("/:id/thumbnails")
+	thumbnails.Get("/", r.ItemThumbnailHandler.Get)
+	thumbnails.Post("/", r.ItemThumbnailHandler.Create)
+	thumbnails.Put("/", r.ItemThumbnailHandler.Update)
+	thumbnails.Delete("/", r.ItemThumbnailHandler.Delete)
 }

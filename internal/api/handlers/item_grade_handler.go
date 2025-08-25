@@ -42,6 +42,12 @@ func (i *itemGradeHandler) Create(ctx *fiber.Ctx) error {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "Failed to parse request body", err)
 	}
 
+	itemId, err := ctx.ParamsInt("id")
+	if err != nil {
+		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "invalid item_id param", err)
+	}
+	req.ItemID = uint(itemId)
+
 	result, err := i.service.Create(ctx.UserContext(), &req)
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "Failed to create item grade", err)
@@ -51,7 +57,7 @@ func (i *itemGradeHandler) Create(ctx *fiber.Ctx) error {
 }
 
 func (i *itemGradeHandler) Get(ctx *fiber.Ctx) error {
-	itemId, err := ctx.ParamsInt("itemID")
+	itemId, err := ctx.ParamsInt("id")
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "invalid item_id param", err)
 	}
@@ -65,7 +71,7 @@ func (i *itemGradeHandler) Get(ctx *fiber.Ctx) error {
 }
 
 func (i *itemGradeHandler) Update(ctx *fiber.Ctx) error {
-	itemId, err := ctx.ParamsInt("itemID")
+	itemId, err := ctx.ParamsInt("id")
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "invalid item_id param", err)
 	}
@@ -104,7 +110,7 @@ func (i *itemGradeHandler) Update(ctx *fiber.Ctx) error {
 }
 
 func (i *itemGradeHandler) Delete(ctx *fiber.Ctx) error {
-	itemId, err := ctx.ParamsInt("itemID")
+	itemId, err := ctx.ParamsInt("id")
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "invalid item_id param", err)
 	}
