@@ -13,7 +13,7 @@ func Seed(db *gorm.DB) error {
 	tables := []string{
 		"object_types", "organizers", "files",
 		"items", "item_details", "item_documents",
-		"item_grades", "item_thumbnails", "pics",
+		"item_grades", "item_thumbnails", "pics", "auctions",
 	}
 
 	if err := toggleFK(db, tables, false); err != nil {
@@ -31,12 +31,13 @@ func Seed(db *gorm.DB) error {
 	SeedItemGrade(db, 30)
 	SeedItemThumbnail(db, 30)
 	SeedPIC(db, 10)
+	SeedAuction(db, 100)
 
 	if err := toggleFK(db, tables, true); err != nil {
 		return err
 	}
 
-	fmt.Println("Seeding done")
+	log.Println("Seeding done")
 	return nil
 }
 
@@ -64,85 +65,90 @@ func truncateTables(db *gorm.DB, tables []string) {
 }
 
 func SeedObjectType(db *gorm.DB, total int) {
-	if err := db.Exec("TRUNCATE TABLE object_types RESTART IDENTITY CASCADE").Error; err != nil {
-		panic(err)
-	}
-	for i := 0; i < total; i++ {
-		data := &entities.ObjectType{
-			Name: gofakeit.HipsterWord(),
-		}
-		if err := db.Create(data).Error; err != nil {
-			log.Printf("skipped entry %s: %s", data.Name, err)
+	exists := map[string]bool{}
+	for i := 0; i < total; {
+		name := gofakeit.HipsterWord()
+		if exists[name] {
 			continue
+		}
+		data := &entities.ObjectType{Name: name}
+		if err := db.Create(data).Error; err == nil {
+			exists[name] = true
+			i++
 		}
 	}
 	log.Println("seeding object type done")
 }
 
 func SeedOrganizer(db *gorm.DB, total int) {
-	if err := db.Exec("TRUNCATE TABLE organizers RESTART IDENTITY CASCADE").Error; err != nil {
-		panic(err)
-	}
-	for i := 0; i < total; i++ {
+	exists := map[string]bool{}
+	for i := 0; i < total; {
+		name := gofakeit.HipsterWord()
+		if exists[name] {
+			continue
+		}
 		data := &entities.Organizer{
-			Name:          gofakeit.HipsterWord(),
+			Name:          name,
 			Address:       gofakeit.Address().Address,
 			BankName:      gofakeit.BankName(),
 			AccountNumber: gofakeit.Numerify("############"),
 			AccountName:   gofakeit.BuzzWord(),
 		}
-		if err := db.Create(data).Error; err != nil {
-			log.Printf("skipped entry %s: %s", data.Name, err)
-			continue
+		if err := db.Create(data).Error; err == nil {
+			exists[name] = true
+			i++
 		}
 	}
 	log.Println("seeding organizer done")
 }
 
 func SeedFile(db *gorm.DB, total int) {
-	if err := db.Exec("TRUNCATE TABLE files RESTART IDENTITY CASCADE").Error; err != nil {
-		panic(err)
-	}
-	for i := 0; i < total; i++ {
-		data := &entities.File{
-			Path: gofakeit.URL(),
-		}
-		if err := db.Create(data).Error; err != nil {
-			log.Printf("skipped entry %s: %s", data.Path, err)
+	exists := map[string]bool{}
+	for i := 0; i < total; {
+		path := gofakeit.URL()
+		if exists[path] {
 			continue
+		}
+		data := &entities.File{Path: path}
+		if err := db.Create(data).Error; err == nil {
+			exists[path] = true
+			i++
 		}
 	}
 	log.Println("seeding file done")
 }
 
 func SeedItem(db *gorm.DB, total int) {
-	if err := db.Exec("TRUNCATE TABLE items RESTART IDENTITY CASCADE").Error; err != nil {
-		panic(err)
-	}
-	for i := 0; i < total; i++ {
+	exists := map[string]bool{}
+	for i := 0; i < total; {
+		name := gofakeit.HipsterWord()
+		if exists[name] {
+			continue
+		}
 		desc := gofakeit.SentenceSimple()
 		data := &entities.Item{
 			ObjectTypeID: uint(gofakeit.Number(1, 10)),
-			Name:         gofakeit.HipsterWord(),
+			Name:         name,
 			Price:        float64(gofakeit.Number(1000000, 100000000)),
 			DepositPrice: float64(gofakeit.Number(100000, 10000000)),
 			Description:  &desc,
 			FileID:       uint(gofakeit.Number(1, 30)),
 		}
-		if err := db.Create(data).Error; err != nil {
-			log.Printf("skipped entry %s: %s", data.Name, err)
-			continue
+		if err := db.Create(data).Error; err == nil {
+			exists[name] = true
+			i++
 		}
 	}
 	log.Println("seeding item done")
 }
 
 func SeedItemDetail(db *gorm.DB, total int) {
-	if err := db.Exec("TRUNCATE TABLE item_details RESTART IDENTITY CASCADE").Error; err != nil {
-		panic(err)
-	}
-
-	for i := 0; i < total; i++ {
+	exists := map[string]bool{}
+	for i := 0; i < total; {
+		itemID := uint(gofakeit.Number(1, 30))
+		if exists[fmt.Sprint(itemID)] {
+			continue
+		}
 		plate := gofakeit.LetterN(2) + gofakeit.Numerify("####") + gofakeit.LetterN(2)
 		series := gofakeit.Word()
 		cc := gofakeit.Float64Range(1000, 5000)
@@ -157,7 +163,7 @@ func SeedItemDetail(db *gorm.DB, total int) {
 		stnkDate := gofakeit.Date()
 
 		data := &entities.ItemDetail{
-			ItemID:        uint(gofakeit.Number(1, 30)),
+			ItemID:        itemID,
 			PlateNumber:   &plate,
 			Brand:         gofakeit.CarMaker(),
 			Series:        &series,
@@ -174,20 +180,21 @@ func SeedItemDetail(db *gorm.DB, total int) {
 			DriveType:     &driveType,
 			StnkDate:      &stnkDate,
 		}
-
-		if err := db.Create(data).Error; err != nil {
-			log.Printf("skipped entry %d: %s", data.ItemID, err)
-			continue
+		if err := db.Create(data).Error; err == nil {
+			exists[fmt.Sprint(itemID)] = true
+			i++
 		}
 	}
 	log.Println("seeding item_detail done")
 }
 
 func SeedItemDocument(db *gorm.DB, total int) {
-	if err := db.Exec("TRUNCATE TABLE item_documents RESTART IDENTITY CASCADE").Error; err != nil {
-		panic(err)
-	}
-	for i := 0; i < total; i++ {
+	exists := map[string]bool{}
+	for i := 0; i < total; {
+		itemID := uint(gofakeit.Number(1, 30))
+		if exists[fmt.Sprint(itemID)] {
+			continue
+		}
 
 		Bpkb := gofakeit.Bool()
 		Stnk := gofakeit.Bool()
@@ -198,7 +205,7 @@ func SeedItemDocument(db *gorm.DB, total int) {
 		Box := gofakeit.Bool()
 
 		data := &entities.ItemDocument{
-			ItemID:           uint(gofakeit.Number(1, 30)),
+			ItemID:           itemID,
 			Bpkb:             &Bpkb,
 			Stnk:             &Stnk,
 			Facture:          &Facture,
@@ -207,65 +214,93 @@ func SeedItemDocument(db *gorm.DB, total int) {
 			Warranty:         &Warranty,
 			Box:              &Box,
 		}
-		if err := db.Create(data).Error; err != nil {
-			log.Printf("skipped entry %d: %s", data.ItemID, err)
-			continue
+		if err := db.Create(data).Error; err == nil {
+			exists[fmt.Sprint(itemID)] = true
+			i++
 		}
 	}
-	log.Println("seeding item done")
+	log.Println("seeding item_document done")
 }
 
 func SeedItemGrade(db *gorm.DB, total int) {
-	if err := db.Exec("TRUNCATE TABLE item_grades RESTART IDENTITY CASCADE").Error; err != nil {
-		panic(err)
-	}
-	for i := 0; i < total; i++ {
+	exists := map[string]bool{}
+	for i := 0; i < total; {
+		itemID := uint(gofakeit.Number(1, 30))
+		if exists[fmt.Sprint(itemID)] {
+			continue
+		}
 		data := &entities.ItemGrade{
-			ItemID:   uint(gofakeit.Number(1, 30)),
+			ItemID:   itemID,
 			Interior: gofakeit.RandomString([]string{"a", "b", "c", "d", "e", "f"}),
 			Exterior: gofakeit.RandomString([]string{"a", "b", "c", "d", "e", "f"}),
 			Frame:    gofakeit.RandomString([]string{"a", "b", "c", "d", "e", "f"}),
 			Machine:  gofakeit.RandomString([]string{"a", "b", "c", "d", "e", "f"}),
 		}
-		if err := db.Create(data).Error; err != nil {
-			log.Printf("skipped entry %d: %s", data.ItemID, err)
-			continue
+		if err := db.Create(data).Error; err == nil {
+			exists[fmt.Sprint(itemID)] = true
+			i++
 		}
 	}
-	log.Println("seeding item done")
+	log.Println("seeding item_grade done")
 }
 
 func SeedItemThumbnail(db *gorm.DB, total int) {
-	if err := db.Exec("TRUNCATE TABLE item_thumbnails RESTART IDENTITY CASCADE").Error; err != nil {
-		panic(err)
-	}
-	for i := 0; i < total; i++ {
+	exists := map[string]bool{}
+	for i := 0; i < total; {
+		name := gofakeit.BuzzWord()
+		if exists[name] {
+			continue
+		}
 		data := &entities.ItemThumbnail{
-			Name:   gofakeit.BuzzWord(),
+			Name:   name,
 			ItemID: uint(gofakeit.Number(1, 30)),
 			FileID: uint(gofakeit.Number(1, 30)),
 		}
-		if err := db.Create(data).Error; err != nil {
-			log.Printf("skipped entry %d: %s", data.ItemID, err)
-			continue
+		if err := db.Create(data).Error; err == nil {
+			exists[name] = true
+			i++
 		}
 	}
 	log.Println("seeding item_thumbnail done")
 }
 
 func SeedPIC(db *gorm.DB, total int) {
-	if err := db.Exec("TRUNCATE TABLE pics RESTART IDENTITY CASCADE").Error; err != nil {
-		panic(err)
-	}
-	for i := 0; i < total; i++ {
-		data := &entities.PIC{
-			Name:        gofakeit.BuzzWord(),
-			PhoneNumber: gofakeit.Phone(),
-		}
-		if err := db.Create(data).Error; err != nil {
-			log.Printf("skipped entry %d: %s", data.Name, err)
+	exists := map[string]bool{}
+	for i := 0; i < total; {
+		name := gofakeit.BuzzWord()
+		if exists[name] {
 			continue
 		}
+		data := &entities.PIC{
+			Name:        name,
+			PhoneNumber: gofakeit.Phone(),
+		}
+		if err := db.Create(data).Error; err == nil {
+			exists[name] = true
+			i++
+		}
 	}
-	log.Println("seeding item_thumbnail done")
+	log.Println("seeding pic done")
+}
+
+func SeedAuction(db *gorm.DB, total int) {
+	exists := map[string]bool{}
+	for i := 0; i < total; {
+		id := fmt.Sprintf("%d-%d-%d", gofakeit.Number(1, 30), gofakeit.Number(1, 30), gofakeit.Number(1, 30))
+		if exists[id] {
+			continue
+		}
+		data := &entities.Auction{
+			ItemID:      uint(gofakeit.Number(1, 30)),
+			OrganizerID: uint(gofakeit.Number(1, 30)),
+			PicID:       uint(gofakeit.Number(1, 30)),
+			StartDate:   gofakeit.Date(),
+			EndDate:     gofakeit.Date(),
+		}
+		if err := db.Create(data).Error; err == nil {
+			exists[id] = true
+			i++
+		}
+	}
+	log.Println("seeding auction done")
 }
