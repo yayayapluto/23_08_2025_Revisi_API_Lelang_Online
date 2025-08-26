@@ -54,7 +54,7 @@ func (r *repository) List(ctx context.Context, offset, limit int, startDate, end
 
 func (r *repository) Create(ctx context.Context, e *entities.Auction) (*entities.Auction, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).Model(&entities.Auction{}).Preload("Item.ObjectType").Preload("Item.File").Preload("Item.ItemDetail").Preload("Item.Document").Preload("Item.Grade").Preload("Item.Thumbnails").Preload("Organizer").Preload("PIC").Where("item_id = ? and pic_id = ? and organizer_id = ? and start_date = ? and end_date = ?", e.ItemID, e.PicID, e.OrganizerID, e.StartDate, e.EndDate).Count(&count).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.Auction{}).Where("item_id = ? and pic_id = ? and organizer_id = ? and start_date = ? and end_date = ?", e.ItemID, e.PicID, e.OrganizerID, e.StartDate, e.EndDate).Count(&count).Error; err != nil {
 		return nil, err
 	}
 	if count > 0 {
@@ -66,7 +66,7 @@ func (r *repository) Create(ctx context.Context, e *entities.Auction) (*entities
 	}
 
 	var result entities.Auction
-	if err := r.db.WithContext(ctx).Model(&entities.Auction{}).Preload("Item.ObjectType").Preload("Item.File").Preload("Item.ItemDetail").Preload("Item.Document").Preload("Item.Grade").Preload("Item.Thumbnails").Preload("Organizer").Preload("PIC").First(&result, e.ID).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.Auction{}).Preload("Item.ObjectType").Preload("Item.File").Preload("Item.ItemDetail").Preload("Item.ItemDocument").Preload("Item.ItemGrade").Preload("Item.ItemThumbnails").Preload("Organizer").Preload("PIC").First(&result, e.ID).Error; err != nil {
 		return nil, err
 	}
 
@@ -75,7 +75,7 @@ func (r *repository) Create(ctx context.Context, e *entities.Auction) (*entities
 
 func (r *repository) Get(ctx context.Context, id uint) (*entities.Auction, error) {
 	var result entities.Auction
-	if err := r.db.WithContext(ctx).Model(&entities.Auction{}).Preload("Item.ObjectType").Preload("Item.File").Preload("Item.ItemDetail").Preload("Item.Document").Preload("Item.Grade").Preload("Item.Thumbnails").Preload("Organizer").Preload("PIC").First(&result, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.Auction{}).Preload("Item.ObjectType").Preload("Item.File").Preload("Item.ItemDetail").Preload("Item.ItemDocument").Preload("Item.ItemGrade").Preload("Item.ItemThumbnails").Preload("Organizer").Preload("PIC").First(&result, id).Error; err != nil {
 		return nil, err
 	}
 	return &result, nil
@@ -95,7 +95,7 @@ func (r *repository) Update(ctx context.Context, e *entities.Auction) (*entities
 	updateData["start_date"] = e.StartDate
 	updateData["end_date"] = e.EndDate
 
-	if err := r.db.WithContext(ctx).Model(&entities.Auction{}).Preload("Item.ObjectType").Preload("Item.File").Preload("Item.ItemDetail").Preload("Item.Document").Preload("Item.Grade").Preload("Item.Thumbnails").Preload("Organizer").Preload("PIC").Where("id = ?", e.ID).Updates(updateData).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.Auction{}).Preload("Item.ObjectType").Preload("Item.File").Preload("Item.ItemDetail").Preload("Item.ItemDocument").Preload("Item.ItemGrade").Preload("Item.ItemThumbnails").Preload("Organizer").Preload("PIC").Where("id = ?", e.ID).Updates(updateData).Error; err != nil {
 		return nil, err
 	}
 
