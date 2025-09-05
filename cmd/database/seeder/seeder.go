@@ -13,7 +13,7 @@ func Seed(db *gorm.DB) error {
 	tables := []string{
 		"object_types", "organizers", "files",
 		"items", "item_details", "item_documents",
-		"item_grades", "item_thumbnails", "pics",
+		"item_grades", "item_thumbnails", "pics", "auctions",
 	}
 
 	if err := toggleFK(db, tables, false); err != nil {
@@ -22,21 +22,22 @@ func Seed(db *gorm.DB) error {
 
 	truncateTables(db, tables)
 
-	SeedObjectType(db, 10)
+	SeedObjectType(db, 5)
 	SeedOrganizer(db, 20)
-	SeedFile(db, 30)
-	SeedItem(db, 30)
-	SeedItemDetail(db, 30)
-	SeedItemDocument(db, 30)
-	SeedItemGrade(db, 30)
-	SeedItemThumbnail(db, 30)
+	SeedFile(db, 50)
+	SeedItem(db, 50)
+	SeedItemDetail(db, 50)
+	SeedItemDocument(db, 50)
+	SeedItemGrade(db, 50)
+	SeedItemThumbnail(db, 50)
 	SeedPIC(db, 10)
+	SeedAuction(db, 100)
 
 	if err := toggleFK(db, tables, true); err != nil {
 		return err
 	}
 
-	fmt.Println("Seeding done")
+	log.Println("Seeding done")
 	return nil
 }
 
@@ -57,107 +58,82 @@ func toggleFK(db *gorm.DB, tables []string, enable bool) error {
 
 func truncateTables(db *gorm.DB, tables []string) {
 	for _, t := range tables {
-		if err := db.Exec(fmt.Sprintf("TRUNCATE TABLE %s RESTART IDENTITY CASCADE", t)).Error; err != nil {
-			panic(err)
-		}
+		db.Exec(fmt.Sprintf("TRUNCATE TABLE %s RESTART IDENTITY CASCADE", t))
 	}
 }
 
 func SeedObjectType(db *gorm.DB, total int) {
-	if err := db.Exec("TRUNCATE TABLE object_types RESTART IDENTITY CASCADE").Error; err != nil {
-		panic(err)
-	}
+	var data []entities.ObjectType
 	for i := 0; i < total; i++ {
-		data := &entities.ObjectType{
-			Name: gofakeit.HipsterWord(),
-		}
-		if err := db.Create(data).Error; err != nil {
-			log.Printf("skipped entry %s: %s", data.Name, err)
-			continue
-		}
+		name := fmt.Sprintf("Type-%d-%s", i, gofakeit.Word())
+		data = append(data, entities.ObjectType{Name: name})
 	}
+	db.CreateInBatches(&data, 10)
 	log.Println("seeding object type done")
 }
 
 func SeedOrganizer(db *gorm.DB, total int) {
-	if err := db.Exec("TRUNCATE TABLE organizers RESTART IDENTITY CASCADE").Error; err != nil {
-		panic(err)
-	}
+	var data []entities.Organizer
 	for i := 0; i < total; i++ {
-		data := &entities.Organizer{
-			Name:          gofakeit.HipsterWord(),
-			Address:       gofakeit.Address().Address,
+		addr := gofakeit.Address()
+		data = append(data, entities.Organizer{
+			Name:          fmt.Sprintf("Org-%d-%s", i, gofakeit.Company()),
+			Address:       addr.Address,
 			BankName:      gofakeit.BankName(),
 			AccountNumber: gofakeit.Numerify("############"),
-			AccountName:   gofakeit.BuzzWord(),
-		}
-		if err := db.Create(data).Error; err != nil {
-			log.Printf("skipped entry %s: %s", data.Name, err)
-			continue
-		}
+			AccountName:   gofakeit.Name(),
+		})
 	}
+	db.CreateInBatches(&data, 10)
 	log.Println("seeding organizer done")
 }
 
 func SeedFile(db *gorm.DB, total int) {
-	if err := db.Exec("TRUNCATE TABLE files RESTART IDENTITY CASCADE").Error; err != nil {
-		panic(err)
-	}
+	var data []entities.File
 	for i := 0; i < total; i++ {
-		data := &entities.File{
-			Path: gofakeit.URL(),
-		}
-		if err := db.Create(data).Error; err != nil {
-			log.Printf("skipped entry %s: %s", data.Path, err)
-			continue
-		}
+		path := fmt.Sprintf("https://placehold.co/%dx%d", gofakeit.Number(300, 800), gofakeit.Number(300, 800))
+		data = append(data, entities.File{Path: path})
 	}
+	db.CreateInBatches(&data, 10)
 	log.Println("seeding file done")
 }
 
 func SeedItem(db *gorm.DB, total int) {
-	if err := db.Exec("TRUNCATE TABLE items RESTART IDENTITY CASCADE").Error; err != nil {
-		panic(err)
-	}
+	var items []entities.Item
 	for i := 0; i < total; i++ {
-		desc := gofakeit.SentenceSimple()
-		data := &entities.Item{
-			ObjectTypeID: uint(gofakeit.Number(1, 10)),
-			Name:         gofakeit.HipsterWord(),
-			Price:        float64(gofakeit.Number(1000000, 100000000)),
-			DepositPrice: float64(gofakeit.Number(100000, 10000000)),
+		desc := gofakeit.Sentence(5)
+		items = append(items, entities.Item{
+			ObjectTypeID: uint(gofakeit.Number(1, 5)),
+			Name:         fmt.Sprintf("Item-%d-%s", i, gofakeit.Product()),
+			Price:        float64(gofakeit.Number(1e6, 1e8)),
+			DepositPrice: float64(gofakeit.Number(1e5, 1e7)),
 			Description:  &desc,
-			FileID:       uint(gofakeit.Number(1, 30)),
-		}
-		if err := db.Create(data).Error; err != nil {
-			log.Printf("skipped entry %s: %s", data.Name, err)
-			continue
-		}
+			FileID:       uint(gofakeit.Number(1, 50)),
+		})
 	}
+	db.CreateInBatches(&items, 10)
 	log.Println("seeding item done")
 }
 
 func SeedItemDetail(db *gorm.DB, total int) {
-	if err := db.Exec("TRUNCATE TABLE item_details RESTART IDENTITY CASCADE").Error; err != nil {
-		panic(err)
-	}
-
+	var details []entities.ItemDetail
 	for i := 0; i < total; i++ {
-		plate := gofakeit.LetterN(2) + gofakeit.Numerify("####") + gofakeit.LetterN(2)
-		series := gofakeit.Word()
+		itemID := uint(i%50 + 1)
+		plate := gofakeit.Regex(`[A-Z]{1,2}\d{1,4}[A-Z]{2}`)
+		series := gofakeit.CarModel()
 		cc := gofakeit.Float64Range(1000, 5000)
 		itype := gofakeit.CarType()
 		transmission := gofakeit.RandomString([]string{"Manual", "Automatic"})
-		model := gofakeit.Word()
-		frameNum := gofakeit.UUID()
-		machineNum := gofakeit.UUID()
+		model := gofakeit.CarModel()
+		frameNum := gofakeit.Regex(`[A-HJ-NPR-Z0-9]{17}`)
+		machineNum := gofakeit.Regex(`[A-HJ-NPR-Z0-9]{17}`)
 		km := gofakeit.Number(1000, 200000)
 		fuel := gofakeit.RandomString([]string{"Petrol", "Diesel", "Electric", "Hybrid"})
 		driveType := gofakeit.RandomString([]string{"FWD", "RWD", "AWD"})
 		stnkDate := gofakeit.Date()
 
-		data := &entities.ItemDetail{
-			ItemID:        uint(gofakeit.Number(1, 30)),
+		details = append(details, entities.ItemDetail{
+			ItemID:        itemID,
 			PlateNumber:   &plate,
 			Brand:         gofakeit.CarMaker(),
 			Series:        &series,
@@ -173,22 +149,16 @@ func SeedItemDetail(db *gorm.DB, total int) {
 			Color:         gofakeit.Color(),
 			DriveType:     &driveType,
 			StnkDate:      &stnkDate,
-		}
-
-		if err := db.Create(data).Error; err != nil {
-			log.Printf("skipped entry %d: %s", data.ItemID, err)
-			continue
-		}
+		})
 	}
+	db.CreateInBatches(&details, 10)
 	log.Println("seeding item_detail done")
 }
 
 func SeedItemDocument(db *gorm.DB, total int) {
-	if err := db.Exec("TRUNCATE TABLE item_documents RESTART IDENTITY CASCADE").Error; err != nil {
-		panic(err)
-	}
+	var docs []entities.ItemDocument
 	for i := 0; i < total; i++ {
-
+		itemID := uint(i%50 + 1)
 		Bpkb := gofakeit.Bool()
 		Stnk := gofakeit.Bool()
 		Facture := gofakeit.Bool()
@@ -197,8 +167,8 @@ func SeedItemDocument(db *gorm.DB, total int) {
 		Warranty := gofakeit.Bool()
 		Box := gofakeit.Bool()
 
-		data := &entities.ItemDocument{
-			ItemID:           uint(gofakeit.Number(1, 30)),
+		docs = append(docs, entities.ItemDocument{
+			ItemID:           itemID,
 			Bpkb:             &Bpkb,
 			Stnk:             &Stnk,
 			Facture:          &Facture,
@@ -206,66 +176,66 @@ func SeedItemDocument(db *gorm.DB, total int) {
 			OwnershipRelease: &OwnershipRelease,
 			Warranty:         &Warranty,
 			Box:              &Box,
-		}
-		if err := db.Create(data).Error; err != nil {
-			log.Printf("skipped entry %d: %s", data.ItemID, err)
-			continue
-		}
+		})
 	}
-	log.Println("seeding item done")
+	db.CreateInBatches(&docs, 10)
+	log.Println("seeding item_document done")
 }
 
 func SeedItemGrade(db *gorm.DB, total int) {
-	if err := db.Exec("TRUNCATE TABLE item_grades RESTART IDENTITY CASCADE").Error; err != nil {
-		panic(err)
-	}
+	var grades []entities.ItemGrade
 	for i := 0; i < total; i++ {
-		data := &entities.ItemGrade{
-			ItemID:   uint(gofakeit.Number(1, 30)),
+		itemID := uint(i%50 + 1)
+		grades = append(grades, entities.ItemGrade{
+			ItemID:   itemID,
 			Interior: gofakeit.RandomString([]string{"a", "b", "c", "d", "e", "f"}),
 			Exterior: gofakeit.RandomString([]string{"a", "b", "c", "d", "e", "f"}),
 			Frame:    gofakeit.RandomString([]string{"a", "b", "c", "d", "e", "f"}),
 			Machine:  gofakeit.RandomString([]string{"a", "b", "c", "d", "e", "f"}),
-		}
-		if err := db.Create(data).Error; err != nil {
-			log.Printf("skipped entry %d: %s", data.ItemID, err)
-			continue
-		}
+		})
 	}
-	log.Println("seeding item done")
+	db.CreateInBatches(&grades, 10)
+	log.Println("seeding item_grade done")
 }
 
 func SeedItemThumbnail(db *gorm.DB, total int) {
-	if err := db.Exec("TRUNCATE TABLE item_thumbnails RESTART IDENTITY CASCADE").Error; err != nil {
-		panic(err)
-	}
+	var thumbs []entities.ItemThumbnail
 	for i := 0; i < total; i++ {
-		data := &entities.ItemThumbnail{
-			Name:   gofakeit.BuzzWord(),
-			ItemID: uint(gofakeit.Number(1, 30)),
-			FileID: uint(gofakeit.Number(1, 30)),
-		}
-		if err := db.Create(data).Error; err != nil {
-			log.Printf("skipped entry %d: %s", data.ItemID, err)
-			continue
-		}
+		thumbs = append(thumbs, entities.ItemThumbnail{
+			Name:   fmt.Sprintf("Thumb-%d-%s", i, gofakeit.Word()),
+			ItemID: uint(gofakeit.Number(1, 50)),
+			FileID: uint(gofakeit.Number(1, 50)),
+		})
 	}
+	db.CreateInBatches(&thumbs, 10)
 	log.Println("seeding item_thumbnail done")
 }
 
 func SeedPIC(db *gorm.DB, total int) {
-	if err := db.Exec("TRUNCATE TABLE pics RESTART IDENTITY CASCADE").Error; err != nil {
-		panic(err)
-	}
+	var pics []entities.PIC
 	for i := 0; i < total; i++ {
-		data := &entities.PIC{
-			Name:        gofakeit.BuzzWord(),
+		pics = append(pics, entities.PIC{
+			Name:        fmt.Sprintf("PIC-%d-%s", i, gofakeit.Name()),
 			PhoneNumber: gofakeit.Phone(),
-		}
-		if err := db.Create(data).Error; err != nil {
-			log.Printf("skipped entry %d: %s", data.Name, err)
-			continue
-		}
+		})
 	}
-	log.Println("seeding item_thumbnail done")
+	db.CreateInBatches(&pics, 10)
+	log.Println("seeding pic done")
+}
+
+func SeedAuction(db *gorm.DB, total int) {
+	var auctions []entities.Auction
+	for i := 0; i < total; i++ {
+		start := gofakeit.Date()
+		end := gofakeit.DateRange(start, start.AddDate(0, 0, 14))
+		auctions = append(auctions, entities.Auction{
+			ItemID:      uint(gofakeit.Number(1, 50)),
+			OrganizerID: uint(gofakeit.Number(1, 20)),
+			PicID:       uint(gofakeit.Number(1, 10)),
+			StartDate:   start,
+			EndDate:     end,
+		})
+	}
+	db.CreateInBatches(&auctions, 10)
+	log.Println("seeding auction done")
 }

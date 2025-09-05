@@ -15,6 +15,7 @@ type RouteConfig struct {
 	ItemGradeHandler     handlers.ItemGradeHandler
 	ItemThumbnailHandler handlers.ItemThumbnailHandler
 	PIChandler           handlers.PICHandler
+	AuctionHandler       handlers.AuctionHandler
 }
 
 func (r *RouteConfig) Setup() {
@@ -22,6 +23,7 @@ func (r *RouteConfig) Setup() {
 	r.Organizer()
 	r.Item()
 	r.PIC()
+	r.Auction()
 }
 
 func (r *RouteConfig) ObjectType() {
@@ -82,4 +84,13 @@ func (r *RouteConfig) PIC() {
 	group.Get("/:id", r.PIChandler.Get)
 	group.Put("/:id", r.PIChandler.Update)
 	group.Delete("/:id", r.PIChandler.Delete)
+}
+
+func (r *RouteConfig) Auction() {
+	group := r.App.Group("/api/auctions")
+	group.Get("/", r.AuctionHandler.List)
+	group.Post("/", r.AuctionHandler.Create)
+	group.Get("/:id", r.AuctionHandler.Get)
+	group.Put("/:id", r.AuctionHandler.Update)
+	group.Delete("/:id", r.AuctionHandler.Delete)
 }

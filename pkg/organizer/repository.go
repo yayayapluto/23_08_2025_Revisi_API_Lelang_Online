@@ -51,7 +51,7 @@ func (r *repository) List(ctx context.Context, offset, limit int, search, sortDi
 
 	if search != nil {
 		sq := "%" + *search + "%"
-		query = query.Where("name LIKE ?", sq)
+		query = query.Where("name LIKE ? or address LIKE ? or bank_name LIKE ? or account_number LIKE ? or account_name LIKE ?", sq, sq, sq, sq, sq)
 	}
 
 	var total int64
