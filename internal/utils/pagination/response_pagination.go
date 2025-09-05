@@ -8,9 +8,10 @@ type ResponseMetaData[T any] struct {
 	NextPageUrl    *string `json:"next_page_url"`
 	PerPage        int     `json:"per_page"`
 	PrevPageUrl    *string `json:"prev_page_url"`
+	TotalPages     int     `json:"total_pages"`
 }
 
-func NewResponseMetaData[T any](currentPage int, currentPageUrl string, data []T, firstPageUrl string, nextPageUrl *string, perPage int, prevPageUrl *string) ResponseMetaData[T] {
+func NewResponseMetaData[T any](currentPage int, currentPageUrl string, data []T, firstPageUrl string, nextPageUrl *string, perPage int, prevPageUrl *string, totalPages int) ResponseMetaData[T] {
 	return ResponseMetaData[T]{
 		CurrentPage:    currentPage,
 		CurrentPageUrl: currentPageUrl,
@@ -19,5 +20,6 @@ func NewResponseMetaData[T any](currentPage int, currentPageUrl string, data []T
 		NextPageUrl:    nextPageUrl,
 		PerPage:        perPage,
 		PrevPageUrl:    prevPageUrl,
+		TotalPages:     totalPages,
 	}
 }

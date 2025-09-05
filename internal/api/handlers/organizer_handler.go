@@ -38,7 +38,7 @@ func (o *organizerHandler) List(ctx *fiber.Ctx) error {
 	sortBy := ctx.Query("sortBy", "id")
 	sortDir := ctx.Query("sortDir", "asc")
 
-	OTs, toral, err := o.s.List(ctx.UserContext(), offset, size, &search, &sortDir, &sortBy) // OTs => organizers | plural
+	OTs, total, err := o.s.List(ctx.UserContext(), offset, size, &search, &sortDir, &sortBy) // OTs => organizers | plural
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to retrieve organizer list", err)
 	}
@@ -47,7 +47,7 @@ func (o *organizerHandler) List(ctx *fiber.Ctx) error {
 	firstPageUrl := pagination.BuildPageURL(ctx, search, 1, size, sortBy, sortDir)
 
 	var nextPageUrl, prevPageUrl *string
-	if offset+len(*OTs) < int(toral) {
+	if offset+len(*OTs) < int(total) {
 		url := pagination.BuildPageURL(ctx, search, page+1, size, sortBy, sortDir)
 		nextPageUrl = &url
 	}
@@ -57,7 +57,9 @@ func (o *organizerHandler) List(ctx *fiber.Ctx) error {
 		prevPageUrl = &url
 	}
 
-	paginationRes := pagination.NewResponseMetaData[entities.Organizer](page, currentPageUrl, *OTs, firstPageUrl, nextPageUrl, size, prevPageUrl)
+	totalPage := int(math.Ceil(float64(total) / float64(size)))
+
+	paginationRes := pagination.NewResponseMetaData[entities.Organizer](page, currentPageUrl, *OTs, firstPageUrl, nextPageUrl, size, prevPageUrl, totalPage)
 	return presenters.SuccessResponse[pagination.ResponseMetaData[entities.Organizer]](ctx, fiber.StatusOK, "successfully retrieve organizer list", &paginationRes)
 }
 

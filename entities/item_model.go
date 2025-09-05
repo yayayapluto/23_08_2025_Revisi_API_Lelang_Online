@@ -14,4 +14,6 @@ type Item struct {
 	ItemDocument   *ItemDocument    `json:"item_document,omitempty" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	ItemGrade      *ItemGrade       `json:"item_grade,omitempty" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	ItemThumbnails *[]ItemThumbnail `json:"item_thumbnails,omitempty" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+
+	TimeStamp
 }

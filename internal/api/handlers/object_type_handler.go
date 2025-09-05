@@ -31,7 +31,7 @@ func (o *objectTypeHandler) List(ctx *fiber.Ctx) error {
 	page := ctx.QueryInt("page", 1)
 
 	size := ctx.QueryInt("size")
-	size = int(math.Min(math.Max(float64(size), 10), 100)) // min 10, max 100
+	size = int(math.Min(math.Max(float64(size), 10), 100)) // min 1, max 100
 
 	offset := (page - 1) * size // ex: page=2 size=10 -> (2 - 1) * 10 -> 10 | that means it start from offset 10
 
@@ -42,6 +42,8 @@ func (o *objectTypeHandler) List(ctx *fiber.Ctx) error {
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to retrieve object type list", err)
 	}
+
+	totalPage := int(math.Ceil(float64(total) / float64(size)))
 
 	currentPageUrl := pagination.BuildPageURL(ctx, search, page, size, sortBy, sortDir)
 	firstPageUrl := pagination.BuildPageURL(ctx, search, 1, size, sortBy, sortDir)
@@ -57,7 +59,7 @@ func (o *objectTypeHandler) List(ctx *fiber.Ctx) error {
 		prevPageUrl = &url
 	}
 
-	paginationRes := pagination.NewResponseMetaData[entities.ObjectType](page, currentPageUrl, *OTs, firstPageUrl, nextPageUrl, size, prevPageUrl)
+	paginationRes := pagination.NewResponseMetaData[entities.ObjectType](page, currentPageUrl, *OTs, firstPageUrl, nextPageUrl, size, prevPageUrl, totalPage)
 	return presenters.SuccessResponse[pagination.ResponseMetaData[entities.ObjectType]](ctx, fiber.StatusOK, "successfully retrieve object type list", &paginationRes)
 }
 
