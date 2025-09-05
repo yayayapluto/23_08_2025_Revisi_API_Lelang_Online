@@ -26,7 +26,7 @@ type (
 func (r *repository) List(ctx context.Context, offset, limit int, search, sortDir, sortBy *string) (*[]entities.Item, int64, error) {
 	var items []entities.Item
 
-	validSortBy := []string{"id", "name", "created_at"}
+	validSortBy := []string{"id", "name", "price", "deposit_price", "created_at"}
 	validSortDir := []string{"asc", "desc"}
 	orderStr, err := utils.BuildOrderQuery(validSortBy, validSortDir, sortBy, sortDir)
 	if err != nil {
