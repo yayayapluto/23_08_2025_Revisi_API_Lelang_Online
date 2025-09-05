@@ -91,7 +91,7 @@ func SeedOrganizer(db *gorm.DB, total int) {
 func SeedFile(db *gorm.DB, total int) {
 	var data []entities.File
 	for i := 0; i < total; i++ {
-		path := fmt.Sprintf("https://placehold.co/%dx%d", gofakeit.Number(300, 800), gofakeit.Number(300, 800))
+		path := fmt.Sprintf("https://placehold.co/%d", gofakeit.Number(300, 800))
 		data = append(data, entities.File{Path: path})
 	}
 	db.CreateInBatches(&data, 10)
