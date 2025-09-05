@@ -104,7 +104,7 @@ func SeedItem(db *gorm.DB, total int) {
 		desc := gofakeit.Sentence(5)
 		items = append(items, entities.Item{
 			ObjectTypeID: uint(gofakeit.Number(1, 5)),
-			Name:         fmt.Sprintf("Item-%d-%s", i, gofakeit.Product()),
+			Name:         fmt.Sprintf("Item-%d-%s", i, gofakeit.Product().Suffix),
 			Price:        float64(gofakeit.Number(1e6, 1e8)),
 			DepositPrice: float64(gofakeit.Number(1e5, 1e7)),
 			Description:  &desc,
