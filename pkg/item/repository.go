@@ -43,7 +43,7 @@ func (r *repository) List(ctx context.Context, offset, limit int, search, sortDi
 		return nil, 0, err
 	}
 
-	if err := query.Offset(offset).Limit(limit).Order(orderStr).Find(&items).Error; err != nil {
+	if err := query.Offset(offset).Limit(limit).Order(*orderStr).Find(&items).Error; err != nil {
 		return nil, 0, err
 	}
 

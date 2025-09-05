@@ -10,7 +10,6 @@ import (
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils/pagination"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/item"
 	"gorm.io/gorm"
-	"log"
 )
 
 type (
@@ -28,50 +27,20 @@ type (
 )
 
 func (i *itemHandler) List(ctx *fiber.Ctx) error {
-	/**
-	{
-	    "success": true,
-	    "message": "successfully created new item",
-	    "content": {
-	        "id": 101,
-	        "object_type_id": 1,
-	        "name": "aloo",
-	        "price": 50000000,
-	        "deposit_price": 1000000,
-	        "description": null,
-	        "file_id": 101,
-	        "ObjectType": {
-	            "id": 1,
-	            "name": "8-bit",
-	            "created_at": "2025-08-24T19:07:02.084661+07:00",
-	            "updated_at": "2025-08-24T19:07:02.084661+07:00"
-	        },
-	        "File": {
-	            "id": 101,
-	            "path": "./public/uploads/2025-08-24/1756037227_splash_ALO.png",
-	            "created_at": "2025-08-24T19:07:07.641472+07:00",
-	            "updated_at": "2025-08-24T19:07:07.641472+07:00"
-	        }
-	    },
-	    "error": null
-	}
-	*/
-
 	rm := utils.GetRequestMeta(ctx)
 	items, total, err := i.s.List(ctx.UserContext(), rm.Offset, rm.Size, &rm.Search, &rm.SortDir, &rm.SortBy)
-	// items => *[]entities.Item
 
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to retrieve item list", err)
 	}
 
-	for i := range *items {
-		newUrlPath, err := utils.BuildFileURL(ctx, &(*items)[i].File)
-		if err != nil {
-			return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to build file url", err)
-		}
-		(*items)[i].File.Path = *newUrlPath
-	}
+	//for i := range *items {
+	//	newUrlPath, err := utils.BuildFileURL(ctx, &(*items)[i].File)
+	//	if err != nil {
+	//		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to build file url", err)
+	//	}
+	//	(*items)[i].File.Path = *newUrlPath
+	//}
 
 	paginationRes := utils.BuildPagination[entities.Item](ctx, rm, *items, total)
 	return presenters.SuccessResponse[pagination.ResponseMetaData[entities.Item]](ctx, fiber.StatusOK, "successfully retrieve item list", &paginationRes)
@@ -82,8 +51,6 @@ func (i *itemHandler) Create(ctx *fiber.Ctx) error {
 	if err := ctx.BodyParser(&itemReq); err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "failed to parse request body", err)
 	}
-
-	log.Println(itemReq)
 
 	header, err := ctx.FormFile("thumbnail")
 	if err != nil {
@@ -98,11 +65,11 @@ func (i *itemHandler) Create(ctx *fiber.Ctx) error {
 		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to create new item", err)
 	}
 
-	newUrlPath, err := utils.BuildFileURL(ctx, &itemRes.File)
-	if err != nil {
-		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to build file url", err)
-	}
-	itemRes.File.Path = *newUrlPath
+	//newUrlPath, err := utils.BuildFileURL(ctx, &itemRes.File)
+	//if err != nil {
+	//	return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to build file url", err)
+	//}
+	//itemRes.File.Path = *newUrlPath
 
 	return presenters.SuccessResponse[entities.Item](ctx, fiber.StatusCreated, "successfully created new item", itemRes)
 }
@@ -118,11 +85,11 @@ func (i *itemHandler) Get(ctx *fiber.Ctx) error {
 		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to get item detail", err)
 	}
 
-	newUrlPath, err := utils.BuildFileURL(ctx, &itemFound.File)
-	if err != nil {
-		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to build file url", err)
-	}
-	itemFound.File.Path = *newUrlPath
+	//newUrlPath, err := utils.BuildFileURL(ctx, &itemFound.File)
+	//if err != nil {
+	//	return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to build file url", err)
+	//}
+	//itemFound.File.Path = *newUrlPath
 
 	return presenters.SuccessResponse[entities.Item](ctx, fiber.StatusOK, "successfully retrieved item detail", itemFound)
 }
@@ -167,11 +134,11 @@ func (i *itemHandler) Update(ctx *fiber.Ctx) error {
 	}
 	itemRes.ID = uint(id)
 
-	newUrlPath, err := utils.BuildFileURL(ctx, &itemRes.File)
-	if err != nil {
-		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to build file url", err)
-	}
-	itemRes.File.Path = *newUrlPath
+	//newUrlPath, err := utils.BuildFileURL(ctx, &itemRes.File)
+	//if err != nil {
+	//	return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to build file url", err)
+	//}
+	//itemRes.File.Path = *newUrlPath
 
 	return presenters.SuccessResponse[entities.Item](ctx, fiber.StatusOK, "successfully updated item detail", itemRes)
 }
