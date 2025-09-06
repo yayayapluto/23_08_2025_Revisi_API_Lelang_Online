@@ -30,7 +30,7 @@ func (r *repository) List(ctx context.Context, offset, limit int, search, sortDi
 		return nil, 0, err
 	}
 
-	query := r.db.WithContext(ctx).Model(&entities.PIC{})
+	query := r.db.WithContext(ctx).Model(&entities.PIC{}).Preload("Auctions")
 	if search != nil {
 		query = query.Where("name LIKE ? or phone_number LIKE ?", "%"+*search+"%", "%"+*search+"%")
 	}
