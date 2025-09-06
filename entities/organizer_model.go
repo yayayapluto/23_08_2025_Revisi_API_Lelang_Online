@@ -7,5 +7,7 @@ type Organizer struct {
 	BankName      string `json:"bank_name" gorm:"not null"`
 	AccountNumber string `json:"account_number" gorm:"not null"`
 	AccountName   string `json:"account_name" gorm:"not null"`
+
+	Auctions []Auction `json:"auctions"`
 	TimeStamp
 }

@@ -47,7 +47,7 @@ func (r *repository) List(ctx context.Context, offset, limit int, search, sortDi
 	}
 
 	orderStr := fmt.Sprintf("%s %s", defSortBy, defSortDir)
-	query := r.db.WithContext(ctx).Model(&entities.Organizer{})
+	query := r.db.WithContext(ctx).Model(&entities.Organizer{}).Preload("Auctions")
 
 	if search != nil {
 		sq := "%" + *search + "%"
