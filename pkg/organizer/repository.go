@@ -28,7 +28,7 @@ type (
 func (r *repository) List(ctx context.Context, offset, limit int, search, sortDir, sortBy *string) (*[]entities.Organizer, int64, error) {
 	var ots []entities.Organizer
 
-	validSortBy := []string{"id", "name", "bank_name", "created_at"}
+	validSortBy := []string{"id", "name", "bank_name", "account_name", "created_at"}
 	defSortBy := validSortBy[0]
 	if sortBy != nil {
 		if !slices.Contains(validSortBy, *sortBy) {
