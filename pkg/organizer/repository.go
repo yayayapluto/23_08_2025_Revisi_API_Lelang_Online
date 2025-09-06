@@ -82,7 +82,7 @@ func (r *repository) Create(ctx context.Context, ot *entities.Organizer) error {
 
 func (r *repository) Get(ctx context.Context, id uint) (*entities.Organizer, error) {
 	var ot entities.Organizer
-	if err := r.db.WithContext(ctx).First(&ot, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(entities.Organizer{}).Preload("Auctions.Item").Preload("Auctions.PIC").First(&ot, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, gorm.ErrRecordNotFound
 		}
