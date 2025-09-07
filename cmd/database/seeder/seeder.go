@@ -7,6 +7,7 @@ import (
 	"github.com/yayayapluto/revisi_api_lelang_online/entities"
 	"gorm.io/gorm"
 	"log"
+	"time"
 )
 
 func Seed(db *gorm.DB) error {
@@ -226,8 +227,8 @@ func SeedPIC(db *gorm.DB, total int) {
 func SeedAuction(db *gorm.DB, total int) {
 	var auctions []entities.Auction
 	for i := 0; i < total; i++ {
-		start := gofakeit.Date()
-		end := gofakeit.DateRange(start, start.AddDate(0, 0, 14))
+		start := gofakeit.DateRange(time.Date(time.Now().Year(), 1, 1, 0, 0, 0, 0, time.Local), time.Now())
+		end := gofakeit.DateRange(start, start.AddDate(1, 0, 0))
 		auctions = append(auctions, entities.Auction{
 			ItemID:      uint(gofakeit.Number(1, 50)),
 			OrganizerID: uint(gofakeit.Number(1, 20)),
