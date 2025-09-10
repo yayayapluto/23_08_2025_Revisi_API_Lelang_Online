@@ -71,7 +71,7 @@ func (r *repository) Create(ctx context.Context, e *entities.PIC) (*entities.PIC
 
 func (r *repository) Get(ctx context.Context, id uint) (*entities.PIC, error) {
 	var result entities.PIC
-	if err := r.db.WithContext(ctx).Model(&entities.PIC{}).First(&result, "id = ?", id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.PIC{}).Preload("Auctions.Organizer").Preload("Auctions.PIC").Preload("Auctions.Item.ObjectType").Preload("Auctions.Item.File").First(&result, "id = ?", id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, gorm.ErrRecordNotFound
 		}

@@ -75,7 +75,7 @@ func (r *repository) Create(ctx context.Context, e *entities.Auction) (*entities
 
 func (r *repository) Get(ctx context.Context, id uint) (*entities.Auction, error) {
 	var result entities.Auction
-	if err := r.db.WithContext(ctx).Model(&entities.Auction{}).Preload("Item.ObjectType").Preload("Item.File").Preload("Item.ItemDetail").Preload("Item.ItemDocument").Preload("Item.ItemGrade").Preload("Item.ItemThumbnails").Preload("Organizer").Preload("PIC").First(&result, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.Auction{}).Preload("Item.ObjectType").Preload("Item.File").Preload("Item.ItemDetail").Preload("Item.ItemDocument").Preload("Item.ItemGrade").Preload("Item.ItemThumbnails").Preload("Item.ItemThumbnails.File").Preload("Organizer").Preload("PIC").First(&result, id).Error; err != nil {
 		return nil, err
 	}
 	return &result, nil
