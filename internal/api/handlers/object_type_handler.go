@@ -6,6 +6,7 @@ import (
 	"github.com/yayayapluto/revisi_api_lelang_online/domain"
 	"github.com/yayayapluto/revisi_api_lelang_online/entities"
 	presenters "github.com/yayayapluto/revisi_api_lelang_online/internal/api/presenters"
+	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils"
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils/pagination"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/objectType"
 	"gorm.io/gorm"
@@ -88,6 +89,15 @@ func (o *objectTypeHandler) Get(ctx *fiber.Ctx) error {
 	ot, err := o.s.Get(ctx.UserContext(), uint(id))
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to get object type detail", err)
+	}
+
+	items := ot.Items
+	for i := range *items {
+		newUrlPath, err := utils.BuildFileURL(ctx, &(*items)[i].File)
+		if err != nil {
+			return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to build file url", err)
+		}
+		(*items)[i].File.Path = *newUrlPath
 	}
 
 	return presenters.SuccessResponse[entities.ObjectType](ctx, fiber.StatusOK, "successfully get object type detail", ot)
