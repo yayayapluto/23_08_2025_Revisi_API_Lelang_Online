@@ -82,7 +82,7 @@ func (r *repository) Create(ctx context.Context, ot *entities.ObjectType) error 
 
 func (r *repository) Get(ctx context.Context, id uint) (*entities.ObjectType, error) {
 	var ot entities.ObjectType
-	if err := r.db.WithContext(ctx).Model(&entities.ObjectType{}).Preload("Items.File").Preload("Items.ObjectType").First(&ot, id).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.ObjectType{}).Preload("Items.File").Preload("Items.ObjectType").Preload("Items.Auction").First(&ot, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, gorm.ErrRecordNotFound
 		}

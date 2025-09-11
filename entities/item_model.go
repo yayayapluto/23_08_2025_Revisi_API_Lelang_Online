@@ -15,5 +15,6 @@ type Item struct {
 	ItemGrade      *ItemGrade       `json:"item_grade,omitempty" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	ItemThumbnails *[]ItemThumbnail `json:"item_thumbnails,omitempty" gorm:"constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 
+	Auction *Auction `json:"auction" gorm:"foreignKey:ItemID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	TimeStamp
 }
