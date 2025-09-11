@@ -75,7 +75,7 @@ func (r *repository) Create(ctx context.Context, e *entities.ItemDetail) (*entit
 	}
 
 	var itemDetailRes entities.ItemDetail
-	if err := r.db.WithContext(ctx).Preload("Item.ObjectType").Preload("Item.File").First(&itemDetailRes, e.ID).Error; err != nil {
+	if err := r.db.WithContext(ctx).First(&itemDetailRes, e.ID).Error; err != nil {
 		return nil, err
 	}
 
@@ -84,7 +84,7 @@ func (r *repository) Create(ctx context.Context, e *entities.ItemDetail) (*entit
 
 func (r *repository) Get(ctx context.Context, itemID uint) (*entities.ItemDetail, error) {
 	var itemDetail entities.ItemDetail
-	if err := r.db.WithContext(ctx).Model(&entities.ItemDetail{}).Preload("Item.ObjectType").Preload("Item.File").Where("item_id = ?", itemID).First(&itemDetail).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.ItemDetail{}).Where("item_id = ?", itemID).First(&itemDetail).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, gorm.ErrRecordNotFound
 		}

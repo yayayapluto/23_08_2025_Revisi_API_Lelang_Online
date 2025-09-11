@@ -15,5 +15,3 @@ type Auction struct {
 	Organizer Organizer `json:"organizer" gorm:"foreignKey:OrganizerID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	PIC       PIC       `json:"pic" gorm:"foreignKey:PicID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }
-
-// ERROR: update or delete on table "organizers" violates foreign key constraint "fk_organizers_auctions" on table "auctions" (SQLSTATE 23503)

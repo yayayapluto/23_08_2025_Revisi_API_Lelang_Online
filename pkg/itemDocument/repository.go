@@ -30,7 +30,7 @@ func (r *repository) List(ctx context.Context, offset, limit int, sortDir, sortB
 		return nil, 0, err
 	}
 
-	query := r.db.WithContext(ctx).Model(&entities.ItemDocument{}).Preload("Item.ObjectType").Preload("Item.File")
+	query := r.db.WithContext(ctx).Model(&entities.ItemDocument{})
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
@@ -62,7 +62,7 @@ func (r *repository) Create(ctx context.Context, e *entities.ItemDocument) (*ent
 	}
 
 	var result entities.ItemDocument
-	if err := r.db.WithContext(ctx).Model(&entities.ItemDocument{}).Where("item_id = ?", e.ItemID).Preload("Item.ObjectType").Preload("Item.File").Find(&result).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.ItemDocument{}).Where("item_id = ?", e.ItemID).Find(&result).Error; err != nil {
 		return nil, err
 	}
 
@@ -71,7 +71,7 @@ func (r *repository) Create(ctx context.Context, e *entities.ItemDocument) (*ent
 
 func (r *repository) Get(ctx context.Context, itemID uint) (*entities.ItemDocument, error) {
 	var result entities.ItemDocument
-	if err := r.db.WithContext(ctx).Model(&entities.ItemDocument{}).Preload("Item.ObjectType").Preload("Item.File").Where("item_id = ?", itemID).First(&result).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.ItemDocument{}).Where("item_id = ?", itemID).First(&result).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, gorm.ErrRecordNotFound
 		}
@@ -109,7 +109,7 @@ func (r *repository) Update(ctx context.Context, e *entities.ItemDocument) (*ent
 	}
 
 	var result entities.ItemDocument
-	if err := r.db.WithContext(ctx).Model(&entities.ItemDocument{}).Preload("Item.ObjectType").Preload("Item.File").Where("item_id = ?", e.ItemID).First(&result).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.ItemDocument{}).Where("item_id = ?", e.ItemID).First(&result).Error; err != nil {
 		return nil, err
 	}
 

@@ -54,6 +54,27 @@ func (p *auctionHandler) List(ctx *fiber.Ctx) error {
 		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "Failed to retrieve Auctions", err)
 	}
 
+	for i := range *collection {
+		auc := &(*collection)[i]
+
+		if auc.Item.File.ID != 0 {
+			if url, err := utils.BuildFileURL(ctx, &auc.Item.File); err == nil {
+				auc.Item.File.Path = *url
+			}
+		}
+
+		if auc.Item.ItemThumbnails != nil {
+			for j := range *auc.Item.ItemThumbnails {
+				thumb := &(*auc.Item.ItemThumbnails)[j].File
+				if thumb.ID != 0 {
+					if url, err := utils.BuildFileURL(ctx, thumb); err == nil {
+						thumb.Path = *url
+					}
+				}
+			}
+		}
+	}
+
 	pagination := utils.BuildPagination(ctx, rm, *collection, total)
 	return presenters.SuccessResponse(ctx, fiber.StatusOK, "Successfully retrieve Auctions", &pagination)
 }
@@ -88,12 +109,29 @@ func (p *auctionHandler) Get(ctx *fiber.Ctx) error {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "Invalid Auction ID", err)
 	}
 
-	result, err := p.service.Get(ctx.UserContext(), uint(id))
+	auc, err := p.service.Get(ctx.UserContext(), uint(id))
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "Failed to retrieve Auction", err)
 	}
 
-	return presenters.SuccessResponse(ctx, fiber.StatusOK, "Successfully retrieved Auction", result)
+	if auc.Item.File.ID != 0 {
+		if url, err := utils.BuildFileURL(ctx, &auc.Item.File); err == nil {
+			auc.Item.File.Path = *url
+		}
+	}
+
+	if auc.Item.ItemThumbnails != nil {
+		for j := range *auc.Item.ItemThumbnails {
+			thumb := &(*auc.Item.ItemThumbnails)[j].File
+			if thumb.ID != 0 {
+				if url, err := utils.BuildFileURL(ctx, thumb); err == nil {
+					thumb.Path = *url
+				}
+			}
+		}
+	}
+
+	return presenters.SuccessResponse(ctx, fiber.StatusOK, "Successfully retrieved Auction", auc)
 }
 
 func (p *auctionHandler) Update(ctx *fiber.Ctx) error {

@@ -45,6 +45,7 @@ func (r *repository) List(ctx context.Context, offset, limit int, startDate, end
 	}
 
 	var collection []entities.Auction
+
 	if err := query.Offset(offset).Limit(limit).Order(*orderStr).Find(&collection).Error; err != nil {
 		return nil, 0, err
 	}

@@ -30,7 +30,7 @@ func (r *repository) List(ctx context.Context, offset, limit int, sortDir, sortB
 		return nil, 0, err
 	}
 
-	query := r.db.WithContext(ctx).Model(&entities.ItemThumbnail{}).Preload("Item.ObjectType").Preload("Item.File").Preload("File")
+	query := r.db.WithContext(ctx).Model(&entities.ItemThumbnail{}).Preload("File")
 	var total int64
 	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
@@ -54,7 +54,7 @@ func (r *repository) Create(ctx context.Context, e *entities.ItemThumbnail) (*en
 	}
 
 	var result entities.ItemThumbnail
-	if err := r.db.WithContext(ctx).Model(&entities.ItemThumbnail{}).Where("item_id = ?", e.ItemID).Preload("Item.ObjectType").Preload("Item.File").Preload("File").Order("created_at desc").First(&result).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.ItemThumbnail{}).Where("item_id = ?", e.ItemID).Preload("File").Order("created_at desc").First(&result).Error; err != nil {
 		return nil, err
 	}
 
@@ -63,7 +63,7 @@ func (r *repository) Create(ctx context.Context, e *entities.ItemThumbnail) (*en
 
 func (r *repository) Get(ctx context.Context, itemID uint) (*entities.ItemThumbnail, error) {
 	var result entities.ItemThumbnail
-	if err := r.db.WithContext(ctx).Model(&entities.ItemThumbnail{}).Preload("Item.ObjectType").Preload("Item.File").Preload("File").Where("item_id = ?", itemID).First(&result).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.ItemThumbnail{}).Preload("File").Where("item_id = ?", itemID).First(&result).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, gorm.ErrRecordNotFound
 		}
@@ -87,7 +87,7 @@ func (r *repository) Update(ctx context.Context, e *entities.ItemThumbnail) (*en
 	}
 
 	var result entities.ItemThumbnail
-	if err := r.db.WithContext(ctx).Model(&entities.ItemThumbnail{}).Preload("Item.ObjectType").Preload("Item.File").Preload("File").Where("item_id = ?", e.ItemID).First(&result).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.ItemThumbnail{}).Preload("File").Where("item_id = ?", e.ItemID).First(&result).Error; err != nil {
 		return nil, err
 	}
 
