@@ -91,6 +91,14 @@ func (i *itemHandler) Get(ctx *fiber.Ctx) error {
 	}
 	itemFound.File.Path = *newUrlPath
 
+	for i := range *itemFound.ItemThumbnails {
+		newThumbnailUrlPath, err := utils.BuildFileURL(ctx, &(*itemFound.ItemThumbnails)[i].File)
+		if err != nil {
+			return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to build file url", err)
+		}
+		(*itemFound.ItemThumbnails)[i].File.Path = *newThumbnailUrlPath
+	}
+
 	return presenters.SuccessResponse[entities.Item](ctx, fiber.StatusOK, "successfully retrieved item detail", itemFound)
 }
 
