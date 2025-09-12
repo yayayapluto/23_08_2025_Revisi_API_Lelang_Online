@@ -189,10 +189,10 @@ func SeedItemGrade(db *gorm.DB, total int) {
 		itemID := uint(i%50 + 1)
 		grades = append(grades, entities.ItemGrade{
 			ItemID:   itemID,
-			Interior: gofakeit.RandomString([]string{"a", "b", "c", "d", "e", "f"}),
-			Exterior: gofakeit.RandomString([]string{"a", "b", "c", "d", "e", "f"}),
-			Frame:    gofakeit.RandomString([]string{"a", "b", "c", "d", "e", "f"}),
-			Machine:  gofakeit.RandomString([]string{"a", "b", "c", "d", "e", "f"}),
+			Interior: gofakeit.RandomString([]string{"a", "b", "c", "d"}),
+			Exterior: gofakeit.RandomString([]string{"a", "b", "c", "d"}),
+			Frame:    gofakeit.RandomString([]string{"a", "b", "c", "d"}),
+			Machine:  gofakeit.RandomString([]string{"a", "b", "c", "d"}),
 		})
 	}
 	db.CreateInBatches(&grades, 10)
