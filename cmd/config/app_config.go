@@ -17,6 +17,7 @@ import (
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/objectType"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/organizer"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/pic"
+	"github.com/yayayapluto/revisi_api_lelang_online/pkg/user"
 	"gorm.io/gorm"
 )
 
@@ -47,6 +48,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	itemThumbnailRepository := itemThumbnail.NewRepository(db)
 	picRepository := pic.NewRepository(db)
 	auctionRepository := auction.NewRepository(db)
+	userRepository := user.NewRepository(db)
 
 	// Services
 	objectTypeService := objectType.NewService(objectTypeRepository)
@@ -59,6 +61,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	itemThumbnailService := itemThumbnail.NewService(itemThumbnailRepository, fileService)
 	picService := pic.NewService(picRepository)
 	auctionService := auction.NewService(auctionRepository)
+	userService := user.NewService(userRepository)
 
 	// Handlers
 	objectTypeHandler := handlers.NewObjectTypeHandler(objectTypeService)
@@ -70,6 +73,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	itemThumbnailHandler := handlers.NewItemThumbnailHandler(itemThumbnailService)
 	picHandler := handlers.NewPICHandler(picService)
 	auctionHandler := handlers.NewAuctionHandler(auctionService)
+	userHandler := handlers.NewUserHandler(userService)
 
 	routeConfig := routes.RouteConfig{
 		App:                  app,
@@ -82,6 +86,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 		ItemThumbnailHandler: itemThumbnailHandler,
 		PIChandler:           picHandler,
 		AuctionHandler:       auctionHandler,
+		UserHandler:          userHandler,
 	}
 	routeConfig.Setup()
 

@@ -5,6 +5,7 @@ import (
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/yayayapluto/revisi_api_lelang_online/cmd/database/fk"
 	"github.com/yayayapluto/revisi_api_lelang_online/entities"
+	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils"
 	"gorm.io/gorm"
 	"log"
 	"time"
@@ -33,6 +34,7 @@ func Seed(db *gorm.DB) error {
 	SeedItemThumbnail(db, 50)
 	SeedPIC(db, 10)
 	SeedAuction(db, 100)
+	SeedUser(db, 10)
 
 	if err := toggleFK(db, tables, true); err != nil {
 		return err
@@ -239,4 +241,19 @@ func SeedAuction(db *gorm.DB, total int) {
 	}
 	db.CreateInBatches(&auctions, 10)
 	log.Println("seeding auction done")
+}
+
+func SeedUser(db *gorm.DB, total int) {
+	var users []entities.User
+	pass, _ := utils.HashPassword("password123")
+	for i := 0; i < total; i++ {
+		users = append(users, entities.User{
+			Username: fmt.Sprintf("User-%v-%s", i, gofakeit.Name()),
+			Email:    fmt.Sprintf("User-%v-%s", i, gofakeit.Email()),
+			Password: pass,
+			Role:     gofakeit.RandomString([]string{"user", "admin"}),
+		})
+	}
+	db.CreateInBatches(&users, 10)
+	log.Println("seeding user done")
 }

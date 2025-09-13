@@ -10,6 +10,7 @@ type Env struct {
 	DBPASSWORD string
 	DBNAME     string
 	DBPORT     string
+	JWT_SECRET string `mapstructure:"JWT_SECRET"`
 }
 
 func LoadEnv() (*Env, error) {

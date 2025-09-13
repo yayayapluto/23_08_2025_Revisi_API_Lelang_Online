@@ -3,8 +3,11 @@ module github.com/yayayapluto/revisi_api_lelang_online
 go 1.24.2
 
 require (
+	github.com/brianvoe/gofakeit/v7 v7.4.0
 	github.com/go-playground/validator/v10 v10.27.0
+	github.com/gofiber/contrib/jwt v1.1.2
 	github.com/gofiber/fiber/v2 v2.52.9
+	github.com/golang-jwt/jwt/v5 v5.3.0
 	github.com/spf13/viper v1.20.1
 	golang.org/x/crypto v0.41.0
 	gorm.io/driver/postgres v1.6.0
@@ -12,8 +15,8 @@ require (
 )
 
 require (
+	github.com/MicahParks/keyfunc/v2 v2.1.0 // indirect
 	github.com/andybalholm/brotli v1.1.0 // indirect
-	github.com/brianvoe/gofakeit/v7 v7.4.0 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
