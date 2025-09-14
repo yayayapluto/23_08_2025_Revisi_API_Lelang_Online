@@ -23,6 +23,7 @@ type (
 		Update(ctx context.Context, user *entities.User) error
 		Delete(ctx context.Context, id uint) error
 
+		Register(ctx context.Context, user *entities.User) error
 		Login(ctx context.Context, identity, password string) (*string, error)
 		GetUserFromToken(ctx context.Context, tokenStr string) (*entities.User, error)
 	}
@@ -193,6 +194,39 @@ func (r *repository) Delete(ctx context.Context, id uint) error {
 	}
 	if tx.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
+	}
+	return nil
+}
+
+// AUTH
+
+func (r *repository) Register(ctx context.Context, user *entities.User) error {
+	var count int64
+	if user.Username == "" || user.Email == "" || user.Password == "" {
+		return errors.New("username, email and password are required")
+	}
+
+	// cek unique username/email
+	if err := r.db.WithContext(ctx).
+		Model(&entities.User{}).
+		Where("username = ? OR email = ?", user.Username, user.Email).
+		Count(&count).Error; err != nil {
+		return err
+	}
+	if count > 0 {
+		return errors.New("username/email already exists")
+	}
+
+	// hash password
+	hashed, err := utils.HashPassword(user.Password)
+	if err != nil {
+		return err
+	}
+	user.Password = hashed
+	user.Role = "user"
+
+	if err := r.db.WithContext(ctx).Create(user).Error; err != nil {
+		return err
 	}
 	return nil
 }

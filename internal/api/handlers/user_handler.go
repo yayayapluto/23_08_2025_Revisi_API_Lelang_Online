@@ -19,6 +19,10 @@ type (
 		Get(ctx *fiber.Ctx) error
 		Update(ctx *fiber.Ctx) error
 		Delete(ctx *fiber.Ctx) error
+
+		CreateOrganizerUser(ctx *fiber.Ctx) error
+
+		Register(ctx *fiber.Ctx) error
 		Login(ctx *fiber.Ctx) error
 		Me(ctx *fiber.Ctx) error
 	}
@@ -105,6 +109,38 @@ func (u *userHandler) Delete(ctx *fiber.Ctx) error {
 	}
 
 	return presenters.SuccessResponse[any](ctx, fiber.StatusOK, "successfully delete user", nil)
+}
+
+func (u *userHandler) CreateOrganizerUser(ctx *fiber.Ctx) error {
+	var req domain.CreateOrganizerUserInput
+	if err := ctx.BodyParser(&req); err != nil {
+		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "failed to parse body", err)
+	}
+
+	if err := u.s.CreateOrganizerUser(ctx.UserContext(), &req); err != nil {
+		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to create organizer user", err)
+	}
+
+	return presenters.SuccessResponse[any](ctx, fiber.StatusCreated, "successfully created organizer user", nil)
+}
+
+// AUTH
+func (u *userHandler) Register(ctx *fiber.Ctx) error {
+	var req domain.RegisterInput
+	if err := ctx.BodyParser(&req); err != nil {
+		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "failed to parse body", err)
+	}
+
+	if req.Password != req.ConfirmPassword {
+		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "password and confirm password do not match", nil)
+	}
+
+	err := u.s.Register(ctx.UserContext(), &req)
+	if err != nil {
+		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to register user", err)
+	}
+
+	return presenters.SuccessResponse[any](ctx, fiber.StatusOK, "successfully register user", nil)
 }
 
 func (u *userHandler) Login(ctx *fiber.Ctx) error {
