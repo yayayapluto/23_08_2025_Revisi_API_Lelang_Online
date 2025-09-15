@@ -4,16 +4,20 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/midtrans/midtrans-go"
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/api/handlers"
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/api/routes"
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/auction"
+	"github.com/yayayapluto/revisi_api_lelang_online/pkg/auctionBidder"
+	"github.com/yayayapluto/revisi_api_lelang_online/pkg/bidderPayment"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/file"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/item"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/itemDetail"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/itemDocument"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/itemGrade"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/itemThumbnail"
+	midtrans2 "github.com/yayayapluto/revisi_api_lelang_online/pkg/midtrans"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/objectType"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/organizer"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/pic"
@@ -37,6 +41,11 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 	}))
 
+	env, err := utils.LoadEnv()
+	if err != nil {
+		return nil, err
+	}
+
 	// Repositories
 	objectTypeRepository := objectType.NewRepository(db)
 	organizerRepository := organizer.NewRepository(db)
@@ -49,6 +58,8 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	picRepository := pic.NewRepository(db)
 	auctionRepository := auction.NewRepository(db)
 	userRepository := user.NewRepository(db)
+	auctionBidderRepository := auctionBidder.NewRepository(db)
+	bidderPaymentRepository := bidderPayment.NewRepository(db)
 
 	// Services
 	objectTypeService := objectType.NewService(objectTypeRepository)
@@ -62,6 +73,9 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	picService := pic.NewService(picRepository)
 	auctionService := auction.NewService(auctionRepository)
 	userService := user.NewService(userRepository)
+	auctionBidderService := auctionBidder.NewService(auctionBidderRepository)
+	midtransService := midtrans2.NewMidtransService(env.MIDTRANS_SERVER_KEY, env.MIDTRANS_MODE, midtrans.Sandbox)
+	bidderPaymentService := bidderPayment.NewService(bidderPaymentRepository, midtransService, userService)
 
 	// Handlers
 	objectTypeHandler := handlers.NewObjectTypeHandler(objectTypeService)
@@ -74,6 +88,9 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	picHandler := handlers.NewPICHandler(picService)
 	auctionHandler := handlers.NewAuctionHandler(auctionService)
 	userHandler := handlers.NewUserHandler(userService)
+	auctionBidderHandler := handlers.NewAuctionBidderHandler(auctionBidderService)
+	bidderPaymentHandler := handlers.NewBidderPaymentHandler(bidderPaymentService)
+	midtransHandler := handlers.NewMidtransHandler(midtransService, bidderPaymentService)
 
 	routeConfig := routes.RouteConfig{
 		App:                  app,
@@ -87,6 +104,9 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 		PIChandler:           picHandler,
 		AuctionHandler:       auctionHandler,
 		UserHandler:          userHandler,
+		AuctionBidderHandler: auctionBidderHandler,
+		PaymentHandler:       bidderPaymentHandler,
+		MidtransHandler:      midtransHandler,
 	}
 	routeConfig.Setup()
 

@@ -21,6 +21,8 @@ func Migrate(db *gorm.DB) error {
 	doMigrate(db, "pics", &entities.PIC{})
 	doMigrate(db, "auctions", &entities.Auction{})
 	doMigrate(db, "users", &entities.User{})
+	doMigrate(db, "auctionBidders", &entities.AuctionBidder{})
+	doMigrate(db, "bidderPayments", &entities.BidderPayment{})
 
 	log.Println("migration done")
 	return nil

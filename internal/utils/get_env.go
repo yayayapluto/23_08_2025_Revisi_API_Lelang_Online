@@ -5,12 +5,14 @@ import (
 )
 
 type Env struct {
-	DBHOST     string
-	DBUSER     string
-	DBPASSWORD string
-	DBNAME     string
-	DBPORT     string
-	JWT_SECRET string `mapstructure:"JWT_SECRET"`
+	DBHOST              string
+	DBUSER              string
+	DBPASSWORD          string
+	DBNAME              string
+	DBPORT              string
+	JWT_SECRET          string `mapstructure:"JWT_SECRET"`
+	MIDTRANS_SERVER_KEY string `mapstructure:"MIDTRANS_SERVER_KEY"`
+	MIDTRANS_MODE       string `mapstructure:"MIDTRANS_MODE"`
 }
 
 func LoadEnv() (*Env, error) {

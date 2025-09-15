@@ -250,6 +250,13 @@ func (r *repository) Login(ctx context.Context, identity, password string) (*str
 		return nil, errors.New("invalid credentials") // Same error for security
 	}
 
+	// ✅ Update last login time IN DATABASE
+	now := time.Now().Local()
+	userModel.LastLoginAt = &now
+	if err := r.db.WithContext(ctx).Save(userModel).Error; err != nil {
+		return nil, fmt.Errorf("failed to update last login: %w", err)
+	}
+
 	// Generate JWT
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)

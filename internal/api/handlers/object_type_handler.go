@@ -7,10 +7,8 @@ import (
 	"github.com/yayayapluto/revisi_api_lelang_online/entities"
 	presenters "github.com/yayayapluto/revisi_api_lelang_online/internal/api/presenters"
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils"
-	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils/pagination"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/objectType"
 	"gorm.io/gorm"
-	"math"
 )
 
 type (
@@ -23,131 +21,101 @@ type (
 	}
 
 	objectTypeHandler struct {
-		s objectType.Service
+		service objectType.Service
 	}
 )
 
 func (o *objectTypeHandler) List(ctx *fiber.Ctx) error {
 	search := ctx.Query("search")
-	page := ctx.QueryInt("page", 1)
+	rm := utils.GetRequestMeta(ctx) // Gunakan RequestMeta yang sudah ada
 
-	size := ctx.QueryInt("size")
-	size = int(math.Min(math.Max(float64(size), 10), 100)) // min 1, max 100
-
-	offset := (page - 1) * size // ex: page=2 size=10 -> (2 - 1) * 10 -> 10 | that means it start from offset 10
-
-	sortBy := ctx.Query("sortBy", "id")
-	sortDir := ctx.Query("sortDir", "asc")
-
-	OTs, total, err := o.s.List(ctx.UserContext(), offset, size, &search, &sortDir, &sortBy) // OTs => object types | plural
+	OTs, total, err := o.service.List(ctx.UserContext(), rm.Offset, rm.Size, &search, &rm.SortDir, &rm.SortBy)
 	if err != nil {
-		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to retrieve object type list", err)
+		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "Failed to retrieve object type list", err)
 	}
 
-	totalPage := int(math.Ceil(float64(total) / float64(size)))
-
-	currentPageUrl := pagination.BuildPageURL(ctx, search, page, size, sortBy, sortDir)
-	firstPageUrl := pagination.BuildPageURL(ctx, search, 1, size, sortBy, sortDir)
-
-	var nextPageUrl, prevPageUrl *string
-	if offset+len(*OTs) < int(total) {
-		url := pagination.BuildPageURL(ctx, search, page+1, size, sortBy, sortDir)
-		nextPageUrl = &url
-	}
-
-	if page > 1 {
-		url := pagination.BuildPageURL(ctx, search, page-1, size, sortBy, sortDir)
-		prevPageUrl = &url
-	}
-
-	paginationRes := pagination.NewResponseMetaData[entities.ObjectType](page, currentPageUrl, *OTs, firstPageUrl, nextPageUrl, size, prevPageUrl, totalPage)
-	return presenters.SuccessResponse[pagination.ResponseMetaData[entities.ObjectType]](ctx, fiber.StatusOK, "successfully retrieve object type list", &paginationRes)
+	pagination := utils.BuildPagination(ctx, rm, *OTs, total)
+	return presenters.SuccessResponse(ctx, fiber.StatusOK, "Successfully retrieve object type list", &pagination)
 }
 
 func (o *objectTypeHandler) Create(ctx *fiber.Ctx) error {
 	var ot entities.ObjectType
 	if err := ctx.BodyParser(&ot); err != nil {
-		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "failed to parse body request", err)
+		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "Failed to parse request body", err)
 	}
 
-	if err := o.s.Create(ctx.UserContext(), &ot); err != nil {
+	if ot.Name == "" {
+		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "name is required", nil)
+	}
+
+	if err := o.service.Create(ctx.UserContext(), &ot); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "failed to create new object type", err)
+			return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "Object type name already exists", err)
 		}
-		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to create new object type", err)
+		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "Failed to create object type", err)
 	}
 
-	return presenters.SuccessResponse[entities.ObjectType](ctx, fiber.StatusOK, "successfully create new object type", &ot)
+	return presenters.SuccessResponse(ctx, fiber.StatusOK, "Successfully created object type", &ot)
 }
 
 func (o *objectTypeHandler) Get(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
-		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "invalid id param", err)
+		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "Invalid object type ID", err)
 	}
 
-	ot, err := o.s.Get(ctx.UserContext(), uint(id))
+	ot, err := o.service.Get(ctx.UserContext(), uint(id))
 	if err != nil {
-		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to get object type detail", err)
+		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "Failed to retrieve object type", err)
 	}
 
-	items := ot.Items
-	for i := range *items {
-		newUrlPath, err := utils.BuildFileURL(ctx, &(*items)[i].File)
-		if err != nil {
-			return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to build file url", err)
-		}
-		(*items)[i].File.Path = *newUrlPath
-	}
-
-	return presenters.SuccessResponse[entities.ObjectType](ctx, fiber.StatusOK, "successfully get object type detail", ot)
+	return presenters.SuccessResponse(ctx, fiber.StatusOK, "Successfully retrieved object type", ot)
 }
 
 func (o *objectTypeHandler) Update(ctx *fiber.Ctx) error {
-
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
-		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "invalid id param", err)
+		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "Invalid object type ID", err)
 	}
 
-	var od domain.UpdateRequestObjectType
-	if err := ctx.BodyParser(&od); err != nil {
-		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "failed to parse body request", err)
+	var updateData domain.UpdateRequestObjectType
+	if err := ctx.BodyParser(&updateData); err != nil {
+		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "Failed to parse request body", err)
 	}
 
 	ot := &entities.ObjectType{ID: uint(id)}
-	if od.Name != nil {
-		ot.Name = *od.Name
+	if updateData.Name != nil {
+		ot.Name = *updateData.Name
 	}
 
-	otRes, err := o.s.Update(ctx.UserContext(), ot)
+	updatedOT, err := o.service.Update(ctx.UserContext(), ot)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "failed to update object type", err)
+			return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "Object type name already exists", err)
 		}
-		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to update object type", err)
+		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "Failed to update object type", err)
 	}
-	otRes.ID = uint(id)
 
-	return presenters.SuccessResponse[entities.ObjectType](ctx, fiber.StatusOK, "successfully update object type", otRes)
+	// Kembalikan data yang sudah diperbarui
+	return presenters.SuccessResponse(ctx, fiber.StatusOK, "Successfully updated object type", updatedOT)
 }
 
 func (o *objectTypeHandler) Delete(ctx *fiber.Ctx) error {
 	id, err := ctx.ParamsInt("id")
 	if err != nil {
-		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "invalid id param", err)
+		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "Invalid object type ID", err)
 	}
 
-	if err := o.s.Delete(ctx.UserContext(), uint(id)); err != nil {
+	if err := o.service.Delete(ctx.UserContext(), uint(id)); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return presenters.ErrorResponse(ctx, fiber.StatusNotFound, "failed to delete object type", err)
+			return presenters.ErrorResponse(ctx, fiber.StatusNotFound, "Object type not found", err)
 		}
-		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to delete object type", err)
+		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "Failed to delete object type", err)
 	}
 
-	return presenters.SuccessResponse[any](ctx, fiber.StatusOK, "successfully remove object type", nil)
+	return presenters.SuccessResponse[any](ctx, fiber.StatusOK, "Successfully deleted object type", nil)
 }
 
 func NewObjectTypeHandler(service objectType.Service) ObjectTypeHandler {
-	return &objectTypeHandler{s: service}
+	return &objectTypeHandler{service: service}
 }

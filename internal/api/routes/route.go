@@ -18,6 +18,9 @@ type RouteConfig struct {
 	PIChandler           handlers.PICHandler
 	AuctionHandler       handlers.AuctionHandler
 	UserHandler          handlers.UserHandler
+	AuctionBidderHandler handlers.AuctionBidderHandler
+	PaymentHandler       handlers.BidderPaymentHandler
+	MidtransHandler      handlers.MidtransHandler
 }
 
 func (r *RouteConfig) Setup() {
@@ -28,6 +31,9 @@ func (r *RouteConfig) Setup() {
 	r.Auction()
 	r.User()
 	r.Auth()
+	r.AuctionBidder()
+	r.Payment()
+	r.Midtrans()
 }
 
 func (r *RouteConfig) ObjectType() {
@@ -114,4 +120,21 @@ func (r *RouteConfig) Auth() {
 	group.Post("/login", r.UserHandler.Login)
 	group.Post("/register", r.UserHandler.Register)
 	group.Get("/me", middleware.Protected(), r.UserHandler.Me)
+}
+
+func (r *RouteConfig) AuctionBidder() {
+	group := r.App.Group("/api/auctionBidders")
+	group.Get("/", r.AuctionBidderHandler.List)
+	group.Post("/", middleware.Protected("admin", "user"), r.AuctionBidderHandler.Create)
+	group.Get("/:id", r.AuctionBidderHandler.Get)
+	group.Put("/:id", middleware.Protected("admin"), r.AuctionBidderHandler.Update)
+	group.Delete("/:id", middleware.Protected("admin"), r.AuctionBidderHandler.Delete)
+}
+
+func (r *RouteConfig) Payment() {
+	r.App.Post("api/payment/initialize", middleware.Protected(), r.PaymentHandler.InitializePayment)
+}
+
+func (r *RouteConfig) Midtrans() {
+	r.App.Get("api/midtrans/payment-callback/:order_id", middleware.Protected(), r.MidtransHandler.PaymentHandler)
 }
