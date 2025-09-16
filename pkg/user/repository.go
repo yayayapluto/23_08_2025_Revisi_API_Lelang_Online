@@ -89,12 +89,12 @@ func (r *repository) Create(ctx context.Context, user *entities.User) error {
 		return errors.New("username/email already exists")
 	}
 
-	newPass, err := utils.HashPassword(user.Email)
+	newPass, err := utils.HashPassword(user.Password)
 	if err != nil {
 		return err
 	}
 
-	user.Email = newPass
+	user.Password = newPass
 	user.Role = "user"
 	if err := r.db.WithContext(ctx).Create(user).Error; err != nil {
 		return err

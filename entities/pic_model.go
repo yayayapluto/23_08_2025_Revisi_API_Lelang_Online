@@ -5,6 +5,6 @@ type PIC struct {
 	Name        string `json:"name" gorm:"unique; not null"`
 	PhoneNumber string `json:"phone_number" gorm:"unique; not null"`
 
-	Auctions []Auction `json:"auctions" gorm:"foreignKey:PicID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Auctions *[]Auction `json:"auctions" gorm:"foreignKey:PicID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	TimeStamp
 }

@@ -9,7 +9,7 @@ import (
 )
 
 func Migrate(db *gorm.DB) error {
-
+	
 	doMigrate(db, "object_types", &entities.ObjectType{})
 	doMigrate(db, "organizers", &entities.Organizer{})
 	doMigrate(db, "files", &entities.File{})
@@ -20,9 +20,11 @@ func Migrate(db *gorm.DB) error {
 	doMigrate(db, "item_thumbnails", &entities.ItemThumbnail{})
 	doMigrate(db, "pics", &entities.PIC{})
 	doMigrate(db, "auctions", &entities.Auction{})
+
 	doMigrate(db, "users", &entities.User{})
 	doMigrate(db, "auctionBidders", &entities.AuctionBidder{})
 	doMigrate(db, "bidderPayments", &entities.BidderPayment{})
+	doMigrate(db, "bids", &entities.Bid{})
 
 	log.Println("migration done")
 	return nil

@@ -7,9 +7,11 @@ import (
 	"github.com/midtrans/midtrans-go"
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/api/handlers"
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/api/routes"
+	"github.com/yayayapluto/revisi_api_lelang_online/internal/sse"
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/auction"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/auctionBidder"
+	"github.com/yayayapluto/revisi_api_lelang_online/pkg/bid"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/bidderPayment"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/file"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/item"
@@ -46,6 +48,11 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 		return nil, err
 	}
 
+	hub := sse.NewHub()
+	go hub.Run()
+
+	sse.NewHandler(app, hub)
+
 	// Repositories
 	objectTypeRepository := objectType.NewRepository(db)
 	organizerRepository := organizer.NewRepository(db)
@@ -60,6 +67,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	userRepository := user.NewRepository(db)
 	auctionBidderRepository := auctionBidder.NewRepository(db)
 	bidderPaymentRepository := bidderPayment.NewRepository(db)
+	bidRepository := bid.NewRepository(db)
 
 	// Services
 	objectTypeService := objectType.NewService(objectTypeRepository)
@@ -76,6 +84,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	auctionBidderService := auctionBidder.NewService(auctionBidderRepository)
 	midtransService := midtrans2.NewMidtransService(env.MIDTRANS_SERVER_KEY, env.MIDTRANS_MODE, midtrans.Sandbox)
 	bidderPaymentService := bidderPayment.NewService(bidderPaymentRepository, midtransService, userService)
+	bidService := bid.NewService(bidRepository, hub)
 
 	// Handlers
 	objectTypeHandler := handlers.NewObjectTypeHandler(objectTypeService)
@@ -91,7 +100,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	auctionBidderHandler := handlers.NewAuctionBidderHandler(auctionBidderService, userService)
 	bidderPaymentHandler := handlers.NewBidderPaymentHandler(bidderPaymentService)
 	midtransHandler := handlers.NewMidtransHandler(midtransService, bidderPaymentService)
-
+	bidHandler := handlers.NewBidHandler(bidService)
 	routeConfig := routes.RouteConfig{
 		App:                  app,
 		ObjectTypeHandler:    objectTypeHandler,
@@ -107,6 +116,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 		AuctionBidderHandler: auctionBidderHandler,
 		PaymentHandler:       bidderPaymentHandler,
 		MidtransHandler:      midtransHandler,
+		BidHandler:           bidHandler,
 	}
 	routeConfig.Setup()
 

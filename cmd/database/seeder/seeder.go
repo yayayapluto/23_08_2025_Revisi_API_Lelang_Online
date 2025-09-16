@@ -33,7 +33,6 @@ func Seed(db *gorm.DB) error {
 	SeedItemGrade(db, 50)
 	SeedItemThumbnail(db, 50)
 	SeedPIC(db, 10)
-	SeedAuction(db, 100)
 	//SeedUser(db, 10)
 
 	pass, _ := utils.HashPassword("password123")
@@ -60,6 +59,8 @@ func Seed(db *gorm.DB) error {
 			OrganizerID: &organizerId,
 		},
 	}, 3)
+
+	SeedAuction(db, 100)
 
 	if err := toggleFK(db, tables, true); err != nil {
 		return err

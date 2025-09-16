@@ -21,6 +21,7 @@ type RouteConfig struct {
 	AuctionBidderHandler handlers.AuctionBidderHandler
 	PaymentHandler       handlers.BidderPaymentHandler
 	MidtransHandler      handlers.MidtransHandler
+	BidHandler           handlers.BidHandler
 }
 
 func (r *RouteConfig) Setup() {
@@ -33,6 +34,7 @@ func (r *RouteConfig) Setup() {
 	r.Auth()
 	r.Payment()
 	r.Midtrans()
+	r.Bid()
 }
 
 func (r *RouteConfig) ObjectType() {
@@ -109,17 +111,16 @@ func (r *RouteConfig) Auction() {
 	bidders.Get("/:bidder_id", middleware.Protected(), r.AuctionBidderHandler.Get)
 	bidders.Put("/:bidder_id", middleware.Protected("admin"), r.AuctionBidderHandler.Update)
 	bidders.Delete("/:bidder_id", middleware.Protected("admin"), r.AuctionBidderHandler.Delete)
-
 }
 
 func (r *RouteConfig) User() {
-	userGroup := r.App.Group("/api/users", middleware.Protected("admin"))
-	userGroup.Get("/", r.UserHandler.List)
-	userGroup.Post("/", r.UserHandler.Create)
-	userGroup.Post("/organizer", r.UserHandler.CreateOrganizerUser)
-	userGroup.Get("/:id", r.UserHandler.Get)
-	userGroup.Put("/:id", r.UserHandler.Update)
-	userGroup.Delete("/:id", r.UserHandler.Delete)
+	group := r.App.Group("/api/users", middleware.Protected("admin"))
+	group.Get("/", r.UserHandler.List)
+	group.Post("/", r.UserHandler.Create)
+	group.Post("/organizer", r.UserHandler.CreateOrganizerUser)
+	group.Get("/:id", r.UserHandler.Get)
+	group.Put("/:id", r.UserHandler.Update)
+	group.Delete("/:id", r.UserHandler.Delete)
 }
 
 func (r *RouteConfig) Auth() {
@@ -130,9 +131,18 @@ func (r *RouteConfig) Auth() {
 }
 
 func (r *RouteConfig) Payment() {
-	r.App.Post("api/payment/initialize", middleware.Protected("user"), r.PaymentHandler.InitializePayment)
+	r.App.Post("/api/payment/initialize", middleware.Protected("user"), r.PaymentHandler.InitializePayment)
 }
 
 func (r *RouteConfig) Midtrans() {
-	r.App.Post("api/midtrans/payment-callback/:order_id", r.MidtransHandler.PaymentHandler)
+	r.App.Post("/api/midtrans/payment-callback/:order_id", r.MidtransHandler.PaymentHandler)
+}
+
+func (r *RouteConfig) Bid() {
+	group := r.App.Group("/api/bids")
+	group.Get("/", r.BidHandler.List)
+	group.Post("/", middleware.Protected("user"), r.BidHandler.Create)
+	group.Get("/:id", r.BidHandler.Get)
+	group.Put("/:id", middleware.Protected("user"), r.BidHandler.Update)
+	group.Delete("/:id", middleware.Protected("user"), r.BidHandler.Delete)
 }

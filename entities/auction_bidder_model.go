@@ -15,6 +15,7 @@ type AuctionBidder struct {
 	Auction *Auction `json:"auction,omitempty" gorm:"foreignKey:AuctionID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 
 	BidderPayment *BidderPayment `json:"bidder_payment,omitempty" gorm:"foreignKey:BidderID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Bid           *[]Bid         `json:"bids,omitempty" gorm:"foreignKey:BidderID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 
 	TimeStamp
 }
