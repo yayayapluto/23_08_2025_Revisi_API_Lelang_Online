@@ -11,10 +11,9 @@ type AuctionBidder struct {
 	AccountNumber string `json:"account_number" gorm:"not null"`
 	AccountName   string `json:"account_name" gorm:"not null"`
 
-	User    User    `json:"user,omitempty" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
-	Auction Auction `json:"auction,omitempty" gorm:"foreignKey:AuctionID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	User    User     `json:"user,omitempty" gorm:"foreignKey:UserID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+	Auction *Auction `json:"auction,omitempty" gorm:"foreignKey:AuctionID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 
-	// one-to-one relasi ke BidderPayment
 	BidderPayment *BidderPayment `json:"bidder_payment,omitempty" gorm:"foreignKey:BidderID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 
 	TimeStamp

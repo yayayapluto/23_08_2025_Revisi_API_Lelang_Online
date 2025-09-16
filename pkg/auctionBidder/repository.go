@@ -30,7 +30,7 @@ func (r *repository) List(ctx context.Context, offset, limit int, sortDir, sortB
 		return nil, 0, err
 	}
 
-	query := r.db.WithContext(ctx).Model(&entities.AuctionBidder{}).Preload("User").Preload("Auction")
+	query := r.db.WithContext(ctx).Model(&entities.AuctionBidder{}).Preload("User").Preload("BidderPayment")
 
 	var total int64
 	if err = query.Count(&total).Error; err != nil {
@@ -62,7 +62,7 @@ func (r *repository) Create(ctx context.Context, e *entities.AuctionBidder) (*en
 
 	var result entities.AuctionBidder
 	if err := r.db.WithContext(ctx).Model(&entities.AuctionBidder{}).
-		Preload("User").Preload("Auction").
+		Preload("User").
 		First(&result, e.ID).Error; err != nil {
 		return nil, err
 	}
@@ -73,7 +73,7 @@ func (r *repository) Create(ctx context.Context, e *entities.AuctionBidder) (*en
 func (r *repository) Get(ctx context.Context, id uint) (*entities.AuctionBidder, error) {
 	var result entities.AuctionBidder
 	if err := r.db.WithContext(ctx).Model(&entities.AuctionBidder{}).
-		Preload("User").Preload("Auction").
+		Preload("User").Preload("BidderPayment").
 		First(&result, id).Error; err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (r *repository) Update(ctx context.Context, e *entities.AuctionBidder) (*en
 
 	var result entities.AuctionBidder
 	if err := r.db.WithContext(ctx).Model(&entities.AuctionBidder{}).
-		Preload("User").Preload("Auction").
+		Preload("User").
 		First(&result, e.ID).Error; err != nil {
 		return nil, err
 	}

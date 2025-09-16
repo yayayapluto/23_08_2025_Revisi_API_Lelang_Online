@@ -27,18 +27,13 @@ func (s *service) ConfirmedPayment(ctx context.Context, id string) error {
 	if err != nil {
 		return err
 	}
-
 	if bidderPayment == nil {
 		return errors.New("payment not found")
 	}
 
-	user, err := s.userService.Get(ctx, bidderPayment.BidderID)
-	if err != nil {
-		return err
-	}
-
-	if user == nil {
-		return errors.New("user not found")
+	bidderPayment.Status = "confirmed"
+	if err := s.repository.Update(ctx, bidderPayment); err != nil {
+		return errors.New("failed to update payment")
 	}
 
 	return nil
@@ -52,17 +47,16 @@ func (s *service) InitializePayment(ctx context.Context, req domain.BidderPaymen
 		Type:     req.Type,
 	}
 
-	// insert dulu → auto increment jalan → bidderPayment.ID keisi
 	if err := s.repository.Insert(ctx, &bidderPayment); err != nil {
 		return nil, err
 	}
 
-	// baru generate snap URL pake ID yang udah ada
-	if err := s.midtransService.GenerateSnapURL(ctx, &bidderPayment); err != nil {
+	snapUrl, err := s.midtransService.GenerateSnapURL(ctx, &bidderPayment)
+	if err != nil {
 		return nil, err
 	}
 
-	// update snap url ke DB
+	bidderPayment.SnapURL = *snapUrl
 	if err := s.repository.Update(ctx, &bidderPayment); err != nil {
 		return nil, err
 	}

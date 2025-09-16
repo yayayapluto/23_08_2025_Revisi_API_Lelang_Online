@@ -88,7 +88,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	picHandler := handlers.NewPICHandler(picService)
 	auctionHandler := handlers.NewAuctionHandler(auctionService)
 	userHandler := handlers.NewUserHandler(userService)
-	auctionBidderHandler := handlers.NewAuctionBidderHandler(auctionBidderService)
+	auctionBidderHandler := handlers.NewAuctionBidderHandler(auctionBidderService, userService)
 	bidderPaymentHandler := handlers.NewBidderPaymentHandler(bidderPaymentService)
 	midtransHandler := handlers.NewMidtransHandler(midtransService, bidderPaymentService)
 

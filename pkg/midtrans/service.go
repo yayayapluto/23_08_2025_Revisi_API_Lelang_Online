@@ -12,7 +12,7 @@ import (
 
 type (
 	MidtransService interface {
-		GenerateSnapURL(ctx context.Context, p *entities.BidderPayment) error
+		GenerateSnapURL(ctx context.Context, p *entities.BidderPayment) (*string, error)
 		VerifyPayment(ctx context.Context, orderId string) (bool, error)
 	}
 	midtransService struct {
@@ -22,7 +22,7 @@ type (
 	}
 )
 
-func (m *midtransService) GenerateSnapURL(ctx context.Context, p *entities.BidderPayment) error {
+func (m *midtransService) GenerateSnapURL(ctx context.Context, p *entities.BidderPayment) (*string, error) {
 	req := &snap.Request{
 		TransactionDetails: midtrans.TransactionDetails{
 			OrderID:  strconv.Itoa(int(p.ID)),
@@ -38,11 +38,11 @@ func (m *midtransService) GenerateSnapURL(ctx context.Context, p *entities.Bidde
 
 	snapResp, err := client.CreateTransaction(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	p.SnapURL = snapResp.RedirectURL
-	return nil
+	return &p.SnapURL, nil
 }
 
 func (m *midtransService) VerifyPayment(ctx context.Context, orderId string) (bool, error) {

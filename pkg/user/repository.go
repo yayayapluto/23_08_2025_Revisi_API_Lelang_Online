@@ -261,9 +261,14 @@ func (r *repository) Login(ctx context.Context, identity, password string) (*str
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["username"] = userModel.Username
+	claims["email"] = userModel.Email
 	claims["role"] = userModel.Role
 	claims["user_id"] = userModel.ID
 	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+
+	if userModel.Role == "organizer" && userModel.OrganizerID != nil {
+		claims["organizer_id"] = *userModel.OrganizerID
+	}
 
 	env, err := utils.LoadEnv()
 	if err != nil {

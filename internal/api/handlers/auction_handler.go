@@ -81,6 +81,14 @@ func (p *auctionHandler) List(ctx *fiber.Ctx) error {
 
 func (p *auctionHandler) Create(ctx *fiber.Ctx) error {
 	var req entities.Auction
+	user, err := utils.GetUserFromToken(ctx)
+	if err != nil {
+		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "Failed to get user from token", err)
+	}
+	if user.Role == "organizer" {
+		req.OrganizerID = user.ID
+	}
+
 	if err := ctx.BodyParser(&req); err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "Failed to parse request body", err)
 	}
@@ -141,6 +149,7 @@ func (p *auctionHandler) Update(ctx *fiber.Ctx) error {
 	}
 
 	var updateData domain.UpdateRequestAuction
+
 	if err := ctx.BodyParser(&updateData); err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "Failed to parse request body", err)
 	}

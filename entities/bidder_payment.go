@@ -10,7 +10,7 @@ type BidderPayment struct {
 	SnapURL  string  `json:"snap_url" gorm:"not null"`
 	Type     string  `json:"type" gorm:"not null"` // deposit or final
 
-	Bidder AuctionBidder `json:"bidder,omitempty" gorm:"foreignKey:BidderID"`
+	Bidder *AuctionBidder `json:"bidder,omitempty" gorm:"foreignKey:BidderID"`
 
 	TimeStamp
 }

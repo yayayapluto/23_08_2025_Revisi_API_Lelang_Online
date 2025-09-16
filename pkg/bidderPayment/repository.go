@@ -35,7 +35,7 @@ func (r *repository) Insert(ctx context.Context, e *entities.BidderPayment) erro
 }
 
 func (r *repository) Update(ctx context.Context, e *entities.BidderPayment) error {
-	if err := r.db.WithContext(ctx).Model(&entities.Auction{}).Where("id = ?", e.ID).Updates(e).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.BidderPayment{}).Where("id = ?", e.ID).Updates(e).Error; err != nil {
 		return err
 	}
 	return nil

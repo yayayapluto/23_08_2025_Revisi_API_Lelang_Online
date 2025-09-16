@@ -48,6 +48,7 @@ func (i *itemHandler) List(ctx *fiber.Ctx) error {
 
 func (i *itemHandler) Create(ctx *fiber.Ctx) error {
 	var itemReq entities.Item
+
 	if err := ctx.BodyParser(&itemReq); err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "failed to parse request body", err)
 	}

@@ -7,6 +7,7 @@ import (
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/api/presenters"
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/auctionBidder"
+	"github.com/yayayapluto/revisi_api_lelang_online/pkg/user"
 	"gorm.io/gorm"
 )
 
@@ -20,7 +21,8 @@ type (
 	}
 
 	auctionBidderHandler struct {
-		service auctionBidder.Service
+		service     auctionBidder.Service
+		userService user.Service
 	}
 )
 
@@ -37,6 +39,21 @@ func (a *auctionBidderHandler) List(ctx *fiber.Ctx) error {
 
 func (a *auctionBidderHandler) Create(ctx *fiber.Ctx) error {
 	var req entities.AuctionBidder
+
+	auctionId, err := ctx.ParamsInt("id")
+	if err != nil {
+		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "Auction ID is required", nil)
+	}
+	req.AuctionID = uint(auctionId)
+
+	user, err := utils.GetUserFromToken(ctx)
+	if err != nil {
+		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "Failed to get user from token", err)
+	}
+	if user.Role == "user" {
+		req.UserID = user.ID
+	}
+
 	if err := ctx.BodyParser(&req); err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "Failed to parse request body", err)
 	}
@@ -44,6 +61,15 @@ func (a *auctionBidderHandler) Create(ctx *fiber.Ctx) error {
 	if req.UserID == 0 {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "user_id is required", nil)
 	}
+
+	userModel, err := a.userService.Get(ctx.UserContext(), req.UserID)
+	if err != nil {
+		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "Failed to get user", err)
+	}
+	if userModel.Role != "user" {
+		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "User role is not allowed", nil)
+	}
+
 	if req.AuctionID == 0 {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "auction_id is required", nil)
 	}
@@ -69,7 +95,7 @@ func (a *auctionBidderHandler) Create(ctx *fiber.Ctx) error {
 }
 
 func (a *auctionBidderHandler) Get(ctx *fiber.Ctx) error {
-	id, err := ctx.ParamsInt("id")
+	id, err := ctx.ParamsInt("bidder_id")
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "Invalid Auction Bidder ID", err)
 	}
@@ -83,7 +109,7 @@ func (a *auctionBidderHandler) Get(ctx *fiber.Ctx) error {
 }
 
 func (a *auctionBidderHandler) Update(ctx *fiber.Ctx) error {
-	id, err := ctx.ParamsInt("id")
+	id, err := ctx.ParamsInt("bidder_id")
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "Invalid Auction Bidder ID", err)
 	}
@@ -108,7 +134,7 @@ func (a *auctionBidderHandler) Update(ctx *fiber.Ctx) error {
 }
 
 func (a *auctionBidderHandler) Delete(ctx *fiber.Ctx) error {
-	id, err := ctx.ParamsInt("id")
+	id, err := ctx.ParamsInt("bidder_id")
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "Invalid Auction Bidder ID", err)
 	}
@@ -123,6 +149,6 @@ func (a *auctionBidderHandler) Delete(ctx *fiber.Ctx) error {
 	return presenters.SuccessResponse[any](ctx, fiber.StatusOK, "Successfully deleted Auction Bidder", nil)
 }
 
-func NewAuctionBidderHandler(service auctionBidder.Service) AuctionBidderHandler {
-	return &auctionBidderHandler{service: service}
+func NewAuctionBidderHandler(service auctionBidder.Service, userService user.Service) AuctionBidderHandler {
+	return &auctionBidderHandler{service: service, userService: userService}
 }

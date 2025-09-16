@@ -27,7 +27,7 @@ type (
 
 func (o *objectTypeHandler) List(ctx *fiber.Ctx) error {
 	search := ctx.Query("search")
-	rm := utils.GetRequestMeta(ctx) // Gunakan RequestMeta yang sudah ada
+	rm := utils.GetRequestMeta(ctx)
 
 	OTs, total, err := o.service.List(ctx.UserContext(), rm.Offset, rm.Size, &search, &rm.SortDir, &rm.SortBy)
 	if err != nil {

@@ -34,7 +34,32 @@ func Seed(db *gorm.DB) error {
 	SeedItemThumbnail(db, 50)
 	SeedPIC(db, 10)
 	SeedAuction(db, 100)
-	SeedUser(db, 10)
+	//SeedUser(db, 10)
+
+	pass, _ := utils.HashPassword("password123")
+	organizerId := uint(1)
+
+	db.CreateInBatches(&[]entities.User{
+		{
+			Username: "farras",
+			Email:    "farras@email.com",
+			Password: pass,
+			Role:     "user",
+		},
+		{
+			Username: "farras tapi admin",
+			Email:    "farrasTapiAdmin@email.com",
+			Password: pass,
+			Role:     "admin",
+		},
+		{
+			Username:    "farras tapi organizer",
+			Email:       "farrasTapiOrganizer@email.com",
+			Password:    pass,
+			Role:        "organizer",
+			OrganizerID: &organizerId,
+		},
+	}, 3)
 
 	if err := toggleFK(db, tables, true); err != nil {
 		return err

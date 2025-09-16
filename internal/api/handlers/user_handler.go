@@ -9,7 +9,6 @@ import (
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/user"
 	"gorm.io/gorm"
-	"strings"
 )
 
 type (
@@ -158,18 +157,9 @@ func (u *userHandler) Login(ctx *fiber.Ctx) error {
 }
 
 func (u *userHandler) Me(ctx *fiber.Ctx) error {
-	bearerToken := ctx.Get("Authorization")
-	if bearerToken == "" {
-		return presenters.ErrorResponse(ctx, fiber.StatusUnauthorized, "missing authorization header", nil)
-	}
-
-	// hapus prefix "Bearer "
-	tokenStr := strings.TrimPrefix(bearerToken, "Bearer ")
-	tokenStr = strings.TrimSpace(tokenStr)
-
-	userRes, err := u.s.GetUserFromToken(ctx.UserContext(), tokenStr)
+	userRes, err := utils.GetUserFromToken(ctx)
 	if err != nil {
-		return presenters.ErrorResponse(ctx, fiber.StatusUnauthorized, "failed to get user", err)
+		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "Failed to get user from token", err)
 	}
 
 	return presenters.SuccessResponse(ctx, fiber.StatusOK, "successfully get user", userRes)

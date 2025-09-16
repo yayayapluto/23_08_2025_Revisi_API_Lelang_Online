@@ -28,7 +28,7 @@ func (b *bidderPaymentHandler) InitializePayment(ctx *fiber.Ctx) error {
 		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to initialize payment", err)
 	}
 
-	return presenters.SuccessResponse(ctx, fiber.StatusOK, "successfullt initialized payment", res)
+	return presenters.SuccessResponse(ctx, fiber.StatusOK, "successfully initialized payment", res)
 }
 
 func NewBidderPaymentHandler(service bidderPayment.Service) BidderPaymentHandler {

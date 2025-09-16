@@ -31,7 +31,6 @@ func (r *RouteConfig) Setup() {
 	r.Auction()
 	r.User()
 	r.Auth()
-	r.AuctionBidder()
 	r.Payment()
 	r.Midtrans()
 }
@@ -81,7 +80,7 @@ func (r *RouteConfig) Item() {
 	grade.Delete("/", middleware.Protected("admin", "organizer"), r.ItemGradeHandler.Delete)
 
 	thumbnails := group.Group("/:id/thumbnails")
-	thumbnails.Get("/", middleware.Protected("admin", "organizer"), r.ItemThumbnailHandler.Get)
+	thumbnails.Get("/", r.ItemThumbnailHandler.Get)
 	thumbnails.Post("/", middleware.Protected("admin", "organizer"), r.ItemThumbnailHandler.Create)
 	thumbnails.Put("/", middleware.Protected("admin", "organizer"), r.ItemThumbnailHandler.Update)
 	thumbnails.Delete("/", middleware.Protected("admin", "organizer"), r.ItemThumbnailHandler.Delete)
@@ -103,6 +102,14 @@ func (r *RouteConfig) Auction() {
 	group.Get("/:id", r.AuctionHandler.Get)
 	group.Put("/:id", middleware.Protected("admin", "organizer"), r.AuctionHandler.Update)
 	group.Delete("/:id", middleware.Protected("admin", "organizer"), r.AuctionHandler.Delete)
+
+	bidders := group.Group("/:id/bidders")
+	bidders.Get("/", middleware.Protected(), r.AuctionBidderHandler.List)
+	bidders.Post("/", middleware.Protected("admin", "user"), r.AuctionBidderHandler.Create)
+	bidders.Get("/:bidder_id", middleware.Protected(), r.AuctionBidderHandler.Get)
+	bidders.Put("/:bidder_id", middleware.Protected("admin"), r.AuctionBidderHandler.Update)
+	bidders.Delete("/:bidder_id", middleware.Protected("admin"), r.AuctionBidderHandler.Delete)
+
 }
 
 func (r *RouteConfig) User() {
@@ -122,19 +129,10 @@ func (r *RouteConfig) Auth() {
 	group.Get("/me", middleware.Protected(), r.UserHandler.Me)
 }
 
-func (r *RouteConfig) AuctionBidder() {
-	group := r.App.Group("/api/auctionBidders")
-	group.Get("/", r.AuctionBidderHandler.List)
-	group.Post("/", middleware.Protected("admin", "user"), r.AuctionBidderHandler.Create)
-	group.Get("/:id", r.AuctionBidderHandler.Get)
-	group.Put("/:id", middleware.Protected("admin"), r.AuctionBidderHandler.Update)
-	group.Delete("/:id", middleware.Protected("admin"), r.AuctionBidderHandler.Delete)
-}
-
 func (r *RouteConfig) Payment() {
-	r.App.Post("api/payment/initialize", middleware.Protected(), r.PaymentHandler.InitializePayment)
+	r.App.Post("api/payment/initialize", middleware.Protected("user"), r.PaymentHandler.InitializePayment)
 }
 
 func (r *RouteConfig) Midtrans() {
-	r.App.Get("api/midtrans/payment-callback/:order_id", middleware.Protected(), r.MidtransHandler.PaymentHandler)
+	r.App.Post("api/midtrans/payment-callback/:order_id", r.MidtransHandler.PaymentHandler)
 }
