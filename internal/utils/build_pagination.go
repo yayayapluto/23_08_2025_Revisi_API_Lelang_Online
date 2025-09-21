@@ -22,6 +22,6 @@ func BuildPagination[T any](ctx *fiber.Ctx, rm RequestMeta, data []T, total int6
 	}
 
 	totalPage := int(math.Ceil(float64(total) / float64(rm.Size)))
-	paginationRes := pagination.NewResponseMetaData[T](rm.Page, currentPageUrl, data, firstPageUrl, nextPageUrl, rm.Size, prevPageUrl, totalPage)
+	paginationRes := pagination.NewResponseMetaData[T](rm.Page, currentPageUrl, data, firstPageUrl, nextPageUrl, rm.Size, prevPageUrl, totalPage, int(total))
 	return paginationRes
 }

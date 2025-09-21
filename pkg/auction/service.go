@@ -8,7 +8,7 @@ import (
 
 type (
 	Service interface {
-		List(ctx context.Context, offset, limit int, startDate, endDate *time.Time, sortDir, sortBy *string) (*[]entities.Auction, int64, error)
+		List(ctx context.Context, offset, limit int, startDate, endDate *time.Time, search *string, objectTypeID, organizerID *int, sortDir, sortBy *string) (*[]entities.Auction, int64, error)
 		Create(ctx context.Context, e *entities.Auction) (*entities.Auction, error)
 		Get(ctx context.Context, id uint) (*entities.Auction, error)
 		Update(ctx context.Context, e *entities.Auction) (*entities.Auction, error)
@@ -20,8 +20,8 @@ type (
 	}
 )
 
-func (s *service) List(ctx context.Context, offset, limit int, startDate, endDate *time.Time, sortDir, sortBy *string) (*[]entities.Auction, int64, error) {
-	return s.repo.List(ctx, offset, limit, startDate, endDate, sortDir, sortBy)
+func (s *service) List(ctx context.Context, offset, limit int, startDate, endDate *time.Time, search *string, objectTypeID, organizerID *int, sortDir, sortBy *string) (*[]entities.Auction, int64, error) {
+	return s.repo.List(ctx, offset, limit, startDate, endDate, search, objectTypeID, organizerID, sortDir, sortBy)
 }
 
 func (s *service) Create(ctx context.Context, e *entities.Auction) (*entities.Auction, error) {

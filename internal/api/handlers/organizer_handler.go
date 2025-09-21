@@ -59,7 +59,7 @@ func (o *organizerHandler) List(ctx *fiber.Ctx) error {
 
 	totalPage := int(math.Ceil(float64(total) / float64(size)))
 
-	paginationRes := pagination.NewResponseMetaData[entities.Organizer](page, currentPageUrl, *OTs, firstPageUrl, nextPageUrl, size, prevPageUrl, totalPage)
+	paginationRes := pagination.NewResponseMetaData[entities.Organizer](page, currentPageUrl, *OTs, firstPageUrl, nextPageUrl, size, prevPageUrl, totalPage, int(total))
 	return presenters.SuccessResponse[pagination.ResponseMetaData[entities.Organizer]](ctx, fiber.StatusOK, "successfully retrieve organizer list", &paginationRes)
 }
 

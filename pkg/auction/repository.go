@@ -6,12 +6,13 @@ import (
 	"github.com/yayayapluto/revisi_api_lelang_online/entities"
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils"
 	"gorm.io/gorm"
+	"strings"
 	"time"
 )
 
 type (
 	Repository interface {
-		List(ctx context.Context, offset, limit int, startDate, endDate *time.Time, sortDir, sortBy *string) (*[]entities.Auction, int64, error)
+		List(ctx context.Context, offset, limit int, startDate, endDate *time.Time, search *string, objectTypeID, organizerID *int, sortDir, sortBy *string) (*[]entities.Auction, int64, error)
 		Create(ctx context.Context, e *entities.Auction) (*entities.Auction, error)
 		Get(ctx context.Context, id uint) (*entities.Auction, error)
 		Update(ctx context.Context, e *entities.Auction) (*entities.Auction, error)
@@ -23,30 +24,80 @@ type (
 	}
 )
 
-func (r *repository) List(ctx context.Context, offset, limit int, startDate, endDate *time.Time, sortDir, sortBy *string) (*[]entities.Auction, int64, error) {
-	validSortBy := []string{"id", "start_date", "end_date", "created_at"}
+func (r *repository) List(
+	ctx context.Context,
+	offset, limit int,
+	startDate, endDate *time.Time,
+	search *string,
+	objectTypeID, organizerID *int,
+	sortDir, sortBy *string,
+) (*[]entities.Auction, int64, error) {
+
+	validSortBy := []string{"id", "start_date", "end_date", "created_at", "price"}
 	validSortDir := []string{"asc", "desc"}
 	orderStr, err := utils.BuildOrderQuery(validSortBy, validSortDir, sortBy, sortDir)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	query := r.db.WithContext(ctx).Model(&entities.Auction{}).Preload("Item.ObjectType").Preload("Item.File").Preload("Organizer").Preload("PIC")
+	query := r.db.WithContext(ctx).
+		Model(&entities.Auction{}).
+		Preload("Item").
+		Preload("Item.ObjectType").
+		Preload("Item.File").
+		Preload("Organizer").
+		Preload("PIC")
+
 	if startDate != nil {
-		query = query.Where("start_date >= ?", startDate)
+		query = query.Where("start_date >= ?", *startDate)
 	}
 	if endDate != nil {
-		query = query.Where("end_date <= ?", endDate)
+		query = query.Where("end_date <= ?", *endDate)
 	}
 
+	// --- JOIN items kalau perlu
+	joinedItems := false
+
+	if search != nil && *search != "" {
+		like := "%" + *search + "%"
+		query = query.Joins("JOIN items ON items.id = auctions.item_id").
+			Where("items.name ILIKE ?", like)
+		joinedItems = true
+	}
+
+	if orderStr != nil && strings.Contains(*orderStr, "price") {
+		if !joinedItems {
+			query = query.Joins("JOIN items ON items.id = auctions.item_id")
+			joinedItems = true
+		}
+		fixed := strings.ReplaceAll(*orderStr, "price", "items.price")
+		orderStr = &fixed
+	}
+
+	if objectTypeID != nil && *objectTypeID != 0 {
+		if !joinedItems {
+			query = query.Joins("JOIN items ON items.id = auctions.item_id")
+			joinedItems = true
+		}
+		query = query.Where("items.object_type_id = ?", *objectTypeID)
+	}
+
+	if organizerID != nil && *organizerID != 0 {
+		query = query.Where("auctions.organizer_id = ?", *organizerID)
+	}
+
+	// --- count dulu
 	var total int64
-	if err = query.Count(&total).Error; err != nil {
+	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
+	// --- baru ambil data
 	var collection []entities.Auction
-
-	if err := query.Offset(offset).Limit(limit).Order(*orderStr).Find(&collection).Error; err != nil {
+	if orderStr != nil {
+		query = query.Order(*orderStr)
+	}
+	if err := query.Offset(offset).Limit(limit).Find(&collection).Error; err != nil {
 		return nil, 0, err
 	}
 

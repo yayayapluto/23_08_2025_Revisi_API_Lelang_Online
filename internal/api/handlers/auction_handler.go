@@ -9,6 +9,7 @@ import (
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/auction"
 	"gorm.io/gorm"
+	"log"
 	"time"
 )
 
@@ -28,7 +29,7 @@ type (
 
 func (p *auctionHandler) List(ctx *fiber.Ctx) error {
 	startDateQuery := ctx.Query("startDate")
-	endDateQuery := ctx.Query("startDate")
+	endDateQuery := ctx.Query("endDate")
 
 	var startDate *time.Time
 	if startDateQuery != "" {
@@ -48,8 +49,22 @@ func (p *auctionHandler) List(ctx *fiber.Ctx) error {
 		endDate = &res
 	}
 
+	var organizerID *int
+	if ctx.Query("organizerID") != "" {
+		val := ctx.QueryInt("organizerID")
+		log.Println("ORGANIZER_ID:", val)
+		organizerID = &val
+	}
+
+	var objectTypeID *int
+	if ctx.Query("objectTypeID") != "" {
+		val := ctx.QueryInt("objectTypeID")
+		log.Println("OBJECT_ID:", val)
+		objectTypeID = &val
+	}
+
 	rm := utils.GetRequestMeta(ctx)
-	collection, total, err := p.service.List(ctx.UserContext(), rm.Offset, rm.Size, startDate, endDate, &rm.SortDir, &rm.SortBy)
+	collection, total, err := p.service.List(ctx.UserContext(), rm.Offset, rm.Size, startDate, endDate, &rm.Search, objectTypeID, organizerID, &rm.SortDir, &rm.SortBy)
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "Failed to retrieve Auctions", err)
 	}
