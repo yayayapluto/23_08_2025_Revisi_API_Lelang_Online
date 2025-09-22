@@ -10,12 +10,29 @@ import (
 type (
 	BidderPaymentHandler interface {
 		InitializePayment(ctx *fiber.Ctx) error
+		CheckBidderPayment(ctx *fiber.Ctx) error
 	}
 
 	bidderPaymentHandler struct {
 		bidderPaymentService bidderPayment.Service
 	}
 )
+
+func (b *bidderPaymentHandler) CheckBidderPayment(ctx *fiber.Ctx) error {
+	userID := ctx.QueryInt("user_id", 0)
+	auctionID := ctx.QueryInt("auction_id", 0)
+
+	if userID == 0 || auctionID == 0 {
+		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "user id and/or auction id are required", nil)
+	}
+
+	res, err := b.bidderPaymentService.FindByBidderData(ctx.UserContext(), uint(auctionID), uint(userID))
+	if err != nil {
+		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "error getting bidder payment", err)
+	}
+
+	return presenters.SuccessResponse(ctx, fiber.StatusOK, "success getting bidder payment", res)
+}
 
 func (b *bidderPaymentHandler) InitializePayment(ctx *fiber.Ctx) error {
 	var req domain.BidderPaymentRequest

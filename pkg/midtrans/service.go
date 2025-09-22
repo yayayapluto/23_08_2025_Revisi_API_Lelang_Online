@@ -29,7 +29,7 @@ func (m *midtransService) GenerateSnapURL(ctx context.Context, p *entities.Bidde
 			GrossAmt: int64(p.Amount),
 		},
 		Callbacks: &snap.Callbacks{
-			Finish: "https://instagram.com",
+			Finish: p.RedirectURL,
 		},
 	}
 

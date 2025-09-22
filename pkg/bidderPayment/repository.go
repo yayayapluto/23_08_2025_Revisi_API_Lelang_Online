@@ -9,6 +9,7 @@ import (
 type (
 	Repository interface {
 		FindById(ctx context.Context, id string) (*entities.BidderPayment, error)
+		FindByBidderData(ctx context.Context, auctionID, userID uint) (*entities.BidderPayment, error)
 		Insert(ctx context.Context, e *entities.BidderPayment) error
 		Update(ctx context.Context, e *entities.BidderPayment) error
 	}
@@ -17,6 +18,20 @@ type (
 		db *gorm.DB
 	}
 )
+
+func (r *repository) FindByBidderData(ctx context.Context, auctionID, userID uint) (*entities.BidderPayment, error) {
+	var result entities.BidderPayment
+	err := r.db.WithContext(ctx).
+		Table("bidder_payments").
+		Joins("JOIN auction_bidders ON auction_bidders.id = bidder_payments.bidder_id").
+		Where("auction_bidders.auction_id = ? AND auction_bidders.user_id = ?", auctionID, userID).
+		First(&result).Error
+
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
 
 func (r *repository) FindById(ctx context.Context, id string) (*entities.BidderPayment, error) {
 	var result entities.BidderPayment

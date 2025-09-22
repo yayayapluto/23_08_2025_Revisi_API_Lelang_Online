@@ -13,6 +13,7 @@ type (
 	Service interface {
 		ConfirmedPayment(ctx context.Context, id string) error
 		InitializePayment(ctx context.Context, req domain.BidderPaymentRequest) (*string, error)
+		FindByBidderData(ctx context.Context, auctionID, userID uint) (*entities.BidderPayment, error)
 	}
 
 	service struct {
@@ -21,6 +22,10 @@ type (
 		userService     user.Service
 	}
 )
+
+func (s *service) FindByBidderData(ctx context.Context, auctionID, userID uint) (*entities.BidderPayment, error) {
+	return s.repository.FindByBidderData(ctx, auctionID, userID)
+}
 
 func (s *service) ConfirmedPayment(ctx context.Context, id string) error {
 	bidderPayment, err := s.repository.FindById(ctx, id)
@@ -41,10 +46,11 @@ func (s *service) ConfirmedPayment(ctx context.Context, id string) error {
 
 func (s *service) InitializePayment(ctx context.Context, req domain.BidderPaymentRequest) (*string, error) {
 	bidderPayment := entities.BidderPayment{
-		BidderID: uint(req.BidderID),
-		Status:   "unknown",
-		Amount:   req.Amount,
-		Type:     req.Type,
+		BidderID:    uint(req.BidderID),
+		Status:      "unknown",
+		Amount:      req.Amount,
+		RedirectURL: req.RedirectURL,
+		Type:        req.Type,
 	}
 
 	if err := s.repository.Insert(ctx, &bidderPayment); err != nil {
