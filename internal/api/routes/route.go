@@ -133,6 +133,7 @@ func (r *RouteConfig) Auth() {
 func (r *RouteConfig) Payment() {
 	r.App.Post("/api/payment/initialize", middleware.Protected("user"), r.PaymentHandler.InitializePayment)
 	r.App.Get("/api/payment/check", middleware.Protected(), r.PaymentHandler.CheckBidderPayment)
+	r.App.Get("/api/payment/history", middleware.Protected(), r.PaymentHandler.GetUserHistory)
 }
 
 func (r *RouteConfig) Midtrans() {

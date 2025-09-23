@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/yayayapluto/revisi_api_lelang_online/domain"
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/api/presenters"
+	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/bidderPayment"
 )
 
@@ -11,12 +12,32 @@ type (
 	BidderPaymentHandler interface {
 		InitializePayment(ctx *fiber.Ctx) error
 		CheckBidderPayment(ctx *fiber.Ctx) error
+		GetUserHistory(ctx *fiber.Ctx) error
 	}
 
 	bidderPaymentHandler struct {
 		bidderPaymentService bidderPayment.Service
 	}
 )
+
+func (b *bidderPaymentHandler) GetUserHistory(ctx *fiber.Ctx) error {
+	userID := ctx.QueryInt("user_id", 0)
+	status := ctx.Query("status", "")
+	paymentType := ctx.Query("payment_type", "")
+
+	if userID == 0 {
+		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "user id is required", nil)
+	}
+
+	requestMeta := utils.GetRequestMeta(ctx)
+	collection, total, err := b.bidderPaymentService.GetUserHistory(ctx.UserContext(), uint(userID), requestMeta.Offset, requestMeta.Size, &requestMeta.SortDir, &requestMeta.SortBy, &status, &paymentType, &requestMeta.Search)
+	if err != nil {
+		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "error getting user history", err)
+	}
+
+	pagination := utils.BuildPagination(ctx, requestMeta, *collection, total)
+	return presenters.SuccessResponse(ctx, fiber.StatusOK, "successfully get user payment history", &pagination)
+}
 
 func (b *bidderPaymentHandler) CheckBidderPayment(ctx *fiber.Ctx) error {
 	userID := ctx.QueryInt("user_id", 0)

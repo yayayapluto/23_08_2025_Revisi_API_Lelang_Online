@@ -16,6 +16,7 @@ type (
 		ConfirmedPayment(ctx context.Context, id string) error
 		InitializePayment(ctx context.Context, req domain.BidderPaymentRequest) (*string, error)
 		FindByBidderData(ctx context.Context, auctionID, userID uint) (*entities.BidderPayment, error)
+		GetUserHistory(ctx context.Context, userID uint, offset, limit int, sortDir, sortBy *string, status, paymentType, itemName *string) (*[]entities.BidderPayment, int64, error)
 	}
 
 	service struct {
@@ -24,6 +25,10 @@ type (
 		userService     user.Service
 	}
 )
+
+func (s *service) GetUserHistory(ctx context.Context, userID uint, offset, limit int, sortDir, sortBy *string, status, paymentType, itemName *string) (*[]entities.BidderPayment, int64, error) {
+	return s.repository.FindByUserId(ctx, userID, offset, limit, sortDir, sortBy, status, paymentType, itemName)
+}
 
 func (s *service) FindByBidderData(ctx context.Context, auctionID, userID uint) (*entities.BidderPayment, error) {
 	return s.repository.FindByBidderData(ctx, auctionID, userID)
