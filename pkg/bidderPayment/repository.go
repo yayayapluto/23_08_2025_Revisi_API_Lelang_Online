@@ -8,7 +8,7 @@ import (
 
 type (
 	Repository interface {
-		FindById(ctx context.Context, id string) (*entities.BidderPayment, error)
+		FindByOrderId(ctx context.Context, orderID string) (*entities.BidderPayment, error)
 		FindByBidderData(ctx context.Context, auctionID, userID uint) (*entities.BidderPayment, error)
 		Insert(ctx context.Context, e *entities.BidderPayment) error
 		Update(ctx context.Context, e *entities.BidderPayment) error
@@ -33,9 +33,9 @@ func (r *repository) FindByBidderData(ctx context.Context, auctionID, userID uin
 	return &result, nil
 }
 
-func (r *repository) FindById(ctx context.Context, id string) (*entities.BidderPayment, error) {
+func (r *repository) FindByOrderId(ctx context.Context, orderID string) (*entities.BidderPayment, error) {
 	var result entities.BidderPayment
-	if err := r.db.WithContext(ctx).First(&result, "id = ?", id).Error; err != nil {
+	if err := r.db.WithContext(ctx).First(&result, "order_id = ?", orderID).Error; err != nil {
 		return nil, err
 	}
 	return &result, nil

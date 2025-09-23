@@ -3,10 +3,12 @@ package bidderPayment
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/yayayapluto/revisi_api_lelang_online/domain"
 	"github.com/yayayapluto/revisi_api_lelang_online/entities"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/midtrans"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/user"
+	"time"
 )
 
 type (
@@ -28,7 +30,7 @@ func (s *service) FindByBidderData(ctx context.Context, auctionID, userID uint) 
 }
 
 func (s *service) ConfirmedPayment(ctx context.Context, id string) error {
-	bidderPayment, err := s.repository.FindById(ctx, id)
+	bidderPayment, err := s.repository.FindByOrderId(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -50,6 +52,7 @@ func (s *service) InitializePayment(ctx context.Context, req domain.BidderPaymen
 		Status:      "unknown",
 		Amount:      req.Amount,
 		RedirectURL: req.RedirectURL,
+		OrderID:     fmt.Sprintf("Order-%v-%v-%v", uint(req.BidderID), time.Now().Unix(), req.Type),
 		Type:        req.Type,
 	}
 

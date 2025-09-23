@@ -10,6 +10,7 @@ type BidderPayment struct {
 	SnapURL     string  `json:"snap_url" gorm:"not null"`
 	RedirectURL string  `json:"redirect_url" gorm:"not null"`
 	Type        string  `json:"type" gorm:"not null"` // deposit or final
+	OrderID     string  `json:"order_id" gorm:"not null"`
 
 	Bidder *AuctionBidder `json:"bidder,omitempty" gorm:"foreignKey:BidderID"`
 

@@ -6,7 +6,6 @@ import (
 	"github.com/midtrans/midtrans-go/coreapi"
 	"github.com/midtrans/midtrans-go/snap"
 	"github.com/yayayapluto/revisi_api_lelang_online/entities"
-	"strconv"
 	"strings"
 )
 
@@ -25,7 +24,7 @@ type (
 func (m *midtransService) GenerateSnapURL(ctx context.Context, p *entities.BidderPayment) (*string, error) {
 	req := &snap.Request{
 		TransactionDetails: midtrans.TransactionDetails{
-			OrderID:  strconv.Itoa(int(p.ID)),
+			OrderID:  p.OrderID,
 			GrossAmt: int64(p.Amount),
 		},
 		Callbacks: &snap.Callbacks{
