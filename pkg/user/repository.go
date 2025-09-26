@@ -243,12 +243,16 @@ func (r *repository) Login(ctx context.Context, identity, password string) (*str
 		return nil, errors.New("kredensial tidak valid")
 	}
 
-	now := time.Now().Local()
-	userModel.LastLoginAt = &now
-	if err := r.db.WithContext(ctx).Save(userModel).Error; err != nil {
+	now := time.Now()
+	if err := r.db.WithContext(ctx).
+		Model(&entities.User{}).
+		Where("id = ?", userModel.ID).
+		Update("last_login_at", now).Error; err != nil {
 		return nil, fmt.Errorf("gagal memperbarui login terakhir: %w", err)
 	}
 
+	userModel.LastLoginAt = &now
+	
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
 	claims["username"] = userModel.Username

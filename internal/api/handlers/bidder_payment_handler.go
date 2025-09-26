@@ -13,12 +13,24 @@ type (
 		InitializePayment(ctx *fiber.Ctx) error
 		CheckBidderPayment(ctx *fiber.Ctx) error
 		GetUserHistory(ctx *fiber.Ctx) error
+		FindByOrderId(ctx *fiber.Ctx) error
 	}
 
 	bidderPaymentHandler struct {
 		bidderPaymentService bidderPayment.Service
 	}
 )
+
+func (b *bidderPaymentHandler) FindByOrderId(ctx *fiber.Ctx) error {
+	orderID := ctx.Params("order_id")
+
+	payment, err := b.bidderPaymentService.FindByOrderId(ctx.UserContext(), orderID)
+	if err != nil {
+		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "error getting payment detail", nil)
+	}
+
+	return presenters.SuccessResponse(ctx, fiber.StatusOK, "successfully getting payment detail", payment)
+}
 
 func (b *bidderPaymentHandler) GetUserHistory(ctx *fiber.Ctx) error {
 	userID := ctx.QueryInt("user_id", 0)
