@@ -10,6 +10,7 @@ import (
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/auctionBidder"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/bid"
 	"gorm.io/gorm"
+	"log"
 )
 
 type (
@@ -28,8 +29,18 @@ type (
 )
 
 func (b *bidHandler) List(ctx *fiber.Ctx) error {
+	var auctionID *uint
+
+	if ctx.QueryInt("auction_id") != 0 {
+		queryAuctionID := uint(ctx.QueryInt("auction_id"))
+		auctionID = &queryAuctionID
+		log.Println("[handler] auction_id", *auctionID)
+	} else {
+		auctionID = nil
+	}
+
 	rm := utils.GetRequestMeta(ctx)
-	collection, total, err := b.service.List(ctx.UserContext(), rm.Offset, rm.Size, &rm.SortDir, &rm.SortBy)
+	collection, total, err := b.service.List(ctx.UserContext(), rm.Offset, rm.Size, &rm.SortDir, &rm.SortBy, auctionID)
 	if err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to retrieve bid list", err)
 

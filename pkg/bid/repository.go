@@ -6,11 +6,12 @@ import (
 	"github.com/yayayapluto/revisi_api_lelang_online/entities"
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils"
 	"gorm.io/gorm"
+	"log"
 )
 
 type (
 	Repository interface {
-		List(ctx context.Context, offset, limit int, sortDir, sortBy *string) (*[]entities.Bid, int64, error)
+		List(ctx context.Context, offset, limit int, sortDir, sortBy *string, auctionID *uint) (*[]entities.Bid, int64, error)
 		Create(ctx context.Context, e *entities.Bid) (*entities.Bid, error)
 		Get(ctx context.Context, id uint) (*entities.Bid, error)
 		Update(ctx context.Context, e *entities.Bid) (*entities.Bid, error)
@@ -22,7 +23,7 @@ type (
 	}
 )
 
-func (r *repository) List(ctx context.Context, offset, limit int, sortDir, sortBy *string) (*[]entities.Bid, int64, error) {
+func (r *repository) List(ctx context.Context, offset, limit int, sortDir, sortBy *string, auctionID *uint) (*[]entities.Bid, int64, error) {
 	validSortBy := []string{"id", "created_at", "value"}
 	validSortDir := []string{"asc", "desc"}
 	orderStr, err := utils.BuildOrderQuery(validSortBy, validSortDir, sortBy, sortDir)
@@ -31,6 +32,14 @@ func (r *repository) List(ctx context.Context, offset, limit int, sortDir, sortB
 	}
 
 	query := r.db.WithContext(ctx).Model(&entities.Bid{}).Preload("Bidder.User")
+
+	log.Println("[repo] auction_id", *auctionID)
+	log.Printf("[repo] query where %v", &entities.Bid{Bidder: entities.AuctionBidder{AuctionID: *auctionID}})
+	if auctionID != nil {
+		query = query.
+			Joins("JOIN auction_bidders ON auction_bidders.id = bids.bidder_id").
+			Where("auction_bidders.auction_id = ?", *auctionID)
+	}
 
 	var total int64
 	if err = query.Count(&total).Error; err != nil {
@@ -43,17 +52,26 @@ func (r *repository) List(ctx context.Context, offset, limit int, sortDir, sortB
 	}
 
 	return &collection, total, nil
+
+	/*
+		2025/10/23 16:10:23 [handler] auction_id 9
+		2025/10/23 16:10:23 [service] auction_id 9
+		2025/10/23 16:10:23 [repo] auction_id 9
+		2025/10/23 16:10:23 [repo] query where &{0 0 0 {0 0 9     {0     <nil> <nil> <nil> {0001-01-01 00:00:00 +0000 UTC 0001-01-01 00:00:00 +0000 UTC}} <nil> <nil> <nil> {0001-01-01 00:00:00 +0000 UTC 0001-01-01 00:00:00 +0000 UTC}} {0001-01-01 00:00:00 +0000 UTC 0001-01-01 00:00:00 +0000 UTC}}
+	*/
 }
 
 func (r *repository) Create(ctx context.Context, e *entities.Bid) (*entities.Bid, error) {
 	sortDir := "desc"
 	sortBy := "value"
-	highestBid, _, err := r.List(ctx, 0, 1, &sortDir, &sortBy)
+	highestBid, _, err := r.List(ctx, 0, 1, &sortDir, &sortBy, nil)
 	if err != nil || highestBid == nil {
 		return nil, err
 	}
 
-	if len(*highestBid) != 0 && e.Value <= (*highestBid)[0].Value {
+	log.Printf("highest bid is: %v", highestBid)
+
+	if e.Value <= (*highestBid)[0].Value {
 		return nil, errors.New("bid value cannot be the same or lower than highest bid")
 	}
 

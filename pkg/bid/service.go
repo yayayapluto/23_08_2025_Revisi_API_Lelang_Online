@@ -6,12 +6,13 @@ import (
 	"github.com/yayayapluto/revisi_api_lelang_online/domain"
 	"github.com/yayayapluto/revisi_api_lelang_online/entities"
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/sse"
+	"log"
 	"strconv"
 )
 
 type (
 	Service interface {
-		List(ctx context.Context, offset, limit int, sortDir, sortBy *string) (*[]entities.Bid, int64, error)
+		List(ctx context.Context, offset, limit int, sortDir, sortBy *string, auctionID *uint) (*[]entities.Bid, int64, error)
 		Create(ctx context.Context, e *entities.Bid) (*entities.Bid, error)
 		Get(ctx context.Context, id uint) (*entities.Bid, error)
 		Update(ctx context.Context, e *entities.Bid) (*entities.Bid, error)
@@ -24,8 +25,9 @@ type (
 	}
 )
 
-func (s *service) List(ctx context.Context, offset, limit int, sortDir, sortBy *string) (*[]entities.Bid, int64, error) {
-	return s.repository.List(ctx, offset, limit, sortDir, sortBy)
+func (s *service) List(ctx context.Context, offset, limit int, sortDir, sortBy *string, auctionID *uint) (*[]entities.Bid, int64, error) {
+	log.Println("[service] auction_id", *auctionID)
+	return s.repository.List(ctx, offset, limit, sortDir, sortBy, auctionID)
 }
 
 func (s *service) Create(ctx context.Context, e *entities.Bid) (*entities.Bid, error) {
