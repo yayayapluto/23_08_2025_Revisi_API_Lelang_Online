@@ -53,7 +53,7 @@ func (r *repository) Create(ctx context.Context, e *entities.Bid) (*entities.Bid
 		return nil, err
 	}
 
-	if e.Value <= (*highestBid)[0].Value {
+	if len(*highestBid) != 0 && e.Value <= (*highestBid)[0].Value {
 		return nil, errors.New("bid value cannot be the same or lower than highest bid")
 	}
 

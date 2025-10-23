@@ -3,9 +3,11 @@ package handlers
 import (
 	"errors"
 	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/yayayapluto/revisi_api_lelang_online/entities"
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/api/presenters"
 	"github.com/yayayapluto/revisi_api_lelang_online/internal/utils"
+	"github.com/yayayapluto/revisi_api_lelang_online/pkg/auctionBidder"
 	"github.com/yayayapluto/revisi_api_lelang_online/pkg/bid"
 	"gorm.io/gorm"
 )
@@ -20,7 +22,8 @@ type (
 	}
 
 	bidHandler struct {
-		service bid.Service
+		service       bid.Service
+		bidderService auctionBidder.Service
 	}
 )
 
@@ -37,19 +40,39 @@ func (b *bidHandler) List(ctx *fiber.Ctx) error {
 }
 
 func (b *bidHandler) Create(ctx *fiber.Ctx) error {
-	var req entities.Bid
+	user := ctx.Locals("user").(*jwt.Token)
+	claims := user.Claims.(jwt.MapClaims)
+	userIDClaim, ok := claims["user_id"].(float64)
+	// map[email:farras@email.com exp:1.76145091e+09 role:user user_id:1 username:farras]
+	if !ok {
+		return presenters.ErrorResponse(ctx, fiber.StatusForbidden, "user_id not found in token", nil)
+	}
 
+	auctionID := ctx.QueryInt("auction_id")
+
+	// {{api_url}}/bids?auction_id=8
+	if userIDClaim == 0 || auctionID == 0 {
+		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "user_id and auction_id are required", nil)
+	}
+
+	bidder, err := b.bidderService.GetByUserIDAndAuctionID(ctx.UserContext(), uint(userIDClaim), uint(auctionID))
+	if err != nil {
+		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "failed to retrieve bid list", err)
+	}
+
+	if bidder == nil {
+		return presenters.ErrorResponse(ctx, fiber.StatusInternalServerError, "cannot find bidder data", nil)
+	}
+
+	var req entities.Bid
 	if err := ctx.BodyParser(&req); err != nil {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "failed to parse request body", err)
 	}
-
-	if req.BidderID == 0 {
-		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "bidder id required", nil)
-	}
-
 	if req.Value <= 0 {
 		return presenters.ErrorResponse(ctx, fiber.StatusBadRequest, "value required", nil)
 	}
+
+	req.BidderID = bidder.ID
 
 	res, err := b.service.Create(ctx.UserContext(), &req)
 	if err != nil {
@@ -114,6 +137,6 @@ func (b *bidHandler) Delete(ctx *fiber.Ctx) error {
 	return presenters.SuccessResponse[any](ctx, fiber.StatusOK, "successfully delete bid", nil)
 }
 
-func NewBidHandler(service bid.Service) BidHandler {
-	return &bidHandler{service: service}
+func NewBidHandler(service bid.Service, bidderService auctionBidder.Service) BidHandler {
+	return &bidHandler{service: service, bidderService: bidderService}
 }

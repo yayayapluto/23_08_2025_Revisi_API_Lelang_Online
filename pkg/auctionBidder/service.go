@@ -10,6 +10,7 @@ type (
 		List(ctx context.Context, offset, limit int, sortDir, sortBy *string) (*[]entities.AuctionBidder, int64, error)
 		Create(ctx context.Context, e *entities.AuctionBidder) (*entities.AuctionBidder, error)
 		Get(ctx context.Context, id uint) (*entities.AuctionBidder, error)
+		GetByUserIDAndAuctionID(ctx context.Context, userID uint, auctionID uint) (*entities.AuctionBidder, error)
 		Update(ctx context.Context, e *entities.AuctionBidder) (*entities.AuctionBidder, error)
 		Delete(ctx context.Context, id uint) error
 	}
@@ -18,6 +19,10 @@ type (
 		repo Repository
 	}
 )
+
+func (s service) GetByUserIDAndAuctionID(ctx context.Context, userID uint, auctionID uint) (*entities.AuctionBidder, error) {
+	return s.repo.GetByUserIDAndAuctionID(ctx, userID, auctionID)
+}
 
 func (s service) List(ctx context.Context, offset, limit int, sortDir, sortBy *string) (*[]entities.AuctionBidder, int64, error) {
 	return s.repo.List(ctx, offset, limit, sortDir, sortBy)

@@ -118,7 +118,7 @@ func (r *repository) Create(ctx context.Context, e *entities.Auction) (*entities
 	}
 
 	var result entities.Auction
-	if err := r.db.WithContext(ctx).Model(&entities.Auction{}).Preload("Item.ObjectType").Preload("Item.File").Preload("Item.ItemDetail").Preload("Item.ItemDocument").Preload("Item.ItemGrade").Preload("Item.ItemThumbnails").Preload("Organizer").Preload("PIC").First(&result, e.ID).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&entities.Auction{}).Preload("Item.ObjectType").Preload("Item.File").Preload("Item.ItemDetail").Preload("Item.ItemDocument").Preload("Item.ItemGrade").Preload("Item.ItemThumbnails").Preload("Organizer").Preload("PIC").Preload("Bidders.Bid").Preload("Bidders.User").First(&result, e.ID).Error; err != nil {
 		return nil, err
 	}
 

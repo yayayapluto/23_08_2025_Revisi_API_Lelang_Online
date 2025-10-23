@@ -100,7 +100,7 @@ func NewApp(db *gorm.DB) (*fiber.App, error) {
 	auctionBidderHandler := handlers.NewAuctionBidderHandler(auctionBidderService, userService)
 	bidderPaymentHandler := handlers.NewBidderPaymentHandler(bidderPaymentService)
 	midtransHandler := handlers.NewMidtransHandler(midtransService, bidderPaymentService)
-	bidHandler := handlers.NewBidHandler(bidService)
+	bidHandler := handlers.NewBidHandler(bidService, auctionBidderService)
 	routeConfig := routes.RouteConfig{
 		App:                  app,
 		ObjectTypeHandler:    objectTypeHandler,

@@ -14,4 +14,6 @@ type Auction struct {
 	Item      Item      `json:"item" gorm:"foreignKey:ItemID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	Organizer Organizer `json:"organizer" gorm:"foreignKey:OrganizerID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 	PIC       PIC       `json:"pic" gorm:"foreignKey:PicID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
+
+	Bidders []AuctionBidder `json:"bidders" gorm:"foreignKey:AuctionID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE"`
 }

@@ -13,6 +13,7 @@ type (
 		List(ctx context.Context, offset, limit int, sortDir, sortBy *string) (*[]entities.AuctionBidder, int64, error)
 		Create(ctx context.Context, e *entities.AuctionBidder) (*entities.AuctionBidder, error)
 		Get(ctx context.Context, id uint) (*entities.AuctionBidder, error)
+		GetByUserIDAndAuctionID(ctx context.Context, userID uint, auctionID uint) (*entities.AuctionBidder, error)
 		Update(ctx context.Context, e *entities.AuctionBidder) (*entities.AuctionBidder, error)
 		Delete(ctx context.Context, id uint) error
 	}
@@ -75,6 +76,14 @@ func (r *repository) Get(ctx context.Context, id uint) (*entities.AuctionBidder,
 	if err := r.db.WithContext(ctx).Model(&entities.AuctionBidder{}).
 		Preload("User").Preload("BidderPayment").
 		First(&result, id).Error; err != nil {
+		return nil, err
+	}
+	return &result, nil
+}
+
+func (r *repository) GetByUserIDAndAuctionID(ctx context.Context, userID uint, auctionID uint) (*entities.AuctionBidder, error) {
+	var result entities.AuctionBidder
+	if err := r.db.WithContext(ctx).Model(&entities.AuctionBidder{}).First(&result, &entities.AuctionBidder{UserID: userID, AuctionID: auctionID}).Error; err != nil {
 		return nil, err
 	}
 	return &result, nil
